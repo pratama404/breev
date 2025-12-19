@@ -1,0 +1,89 @@
+[
+    {
+        "id": "mqtt-in",
+        "type": "mqtt in",
+        "z": "flow1",
+        "name": "AQI Sensor Data",
+        "topic": "aqi/sensor/+/telemetry",
+        "qos": "1",
+        "datatype": "json",
+        "broker": "mqtt-broker",
+        "x": 150,
+        "y": 100,
+        "wires": [["validate-data"]]
+    },
+    {
+        "id": "validate-data",
+        "type": "function",
+        "z": "flow1",
+        "name": "Validate & Process",
+        "func": "// Validate incoming sensor data\nif (!msg.payload || !msg.payload.sensor_id) {\n    node.error('Invalid sensor data', msg);\n    return null;\n}\n\n// Add server timestamp\nmsg.payload.server_timestamp = new Date().toISOString();\n\n// Validate numeric values\nif (isNaN(msg.payload.temperature) || isNaN(msg.payload.humidity)) {\n    node.error('Invalid sensor readings', msg);\n    return null;\n}\n\n// Add metadata\nmsg.payload.processed_at = Date.now();\n\nreturn msg;",
+        "x": 350,
+        "y": 100,
+        "wires": [["store-mongodb", "debug-output"]]
+    },
+    {
+        "id": "store-mongodb",
+        "type": "mongodb4",
+        "z": "flow1",
+        "name": "Store to MongoDB",
+        "clientId": "mongodb-client",
+        "collection": "sensor_logs",
+        "operation": "insert",
+        "x": 550,
+        "y": 100,
+        "wires": [["success-log"]]
+    },
+    {
+        "id": "success-log",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Success Log",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "x": 750,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "debug-output",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Debug Data",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "x": 550,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "mqtt-broker",
+        "type": "mqtt-broker",
+        "name": "EMQX Broker",
+        "broker": "emqx",
+        "port": "1883",
+        "clientid": "node-red-client",
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true
+    },
+    {
+        "id": "mongodb-client",
+        "type": "mongodb4-client",
+        "name": "MongoDB Client",
+        "protocol": "mongodb",
+        "hostname": "mongodb",
+        "port": "27017",
+        "dbname": "aqi_monitoring",
+        "authsource": "admin",
+        "username": "admin",
+        "password": "password123"
+    }
+]

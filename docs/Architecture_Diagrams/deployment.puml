@@ -1,0 +1,103 @@
+@startuml Deployment Diagram
+!theme plain
+
+title Deployment Architecture
+
+node "Building Infrastructure" {
+    node "Room 1" {
+        artifact "ESP32_A101" as esp1
+        artifact "MQ135 Sensor" as mq1
+        artifact "DHT22 Sensor" as dht1
+        artifact "QR Code Label" as qr1
+    }
+    
+    node "Room 2" {
+        artifact "ESP32_A102" as esp2
+        artifact "MQ135 Sensor" as mq2
+        artifact "DHT22 Sensor" as dht2
+        artifact "QR Code Label" as qr2
+    }
+    
+    node "WiFi Access Point" as wifi {
+        artifact "802.11 b/g/n" as wireless
+    }
+}
+
+cloud "Internet" {
+    node "Vercel Platform" {
+        artifact "Next.js App" as nextjs
+        artifact "API Routes" as api
+        artifact "Static Assets" as assets
+    }
+}
+
+node "Docker Host Server" {
+    node "EMQX Container" {
+        artifact "MQTT Broker" as mqtt
+        artifact "Management UI" as emqx_ui
+    }
+    
+    node "MongoDB Container" {
+        artifact "Database Engine" as mongo
+        artifact "Data Files" as data
+    }
+    
+    node "Node-RED Container" {
+        artifact "Flow Engine" as nodered
+        artifact "Flow Editor" as editor
+    }
+    
+    node "AirPhyNet Container" {
+        artifact "FastAPI Service" as fastapi
+        artifact "PyTorch Model" as model
+    }
+    
+    node "Grafana Container" {
+        artifact "Dashboard Engine" as grafana
+        artifact "Visualization" as viz
+    }
+}
+
+node "User Devices" {
+    artifact "Smartphone" as phone
+    artifact "Laptop" as laptop
+    artifact "Tablet" as tablet
+}
+
+' Physical connections
+esp1 --> mq1 : ADC
+esp1 --> dht1 : GPIO
+esp2 --> mq2 : ADC
+esp2 --> dht2 : GPIO
+
+' Network connections
+esp1 --> wifi : WiFi
+esp2 --> wifi : WiFi
+wifi --> mqtt : MQTT/TCP
+
+' Container communications
+mqtt --> nodered : Subscribe
+nodered --> mongo : Store Data
+mongo --> fastapi : Historical Data
+fastapi --> mongo : Store Predictions
+
+' User access
+phone --> nextjs : HTTPS
+laptop --> nextjs : HTTPS
+tablet --> nextjs : HTTPS
+phone --> qr1 : Scan
+phone --> qr2 : Scan
+
+' API connections
+nextjs --> mongo : Query Data
+api --> fastapi : ML Requests
+grafana --> mongo : Analytics
+
+note right of mqtt : Port 1883
+note right of mongo : Port 27017
+note right of nodered : Port 1880
+note right of fastapi : Port 8000
+note right of grafana : Port 3000
+note right of nextjs : Port 443 (HTTPS)
+
+@enduml

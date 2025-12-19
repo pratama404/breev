@@ -1,0 +1,55 @@
+@startuml Data Flow Diagram
+!theme plain
+
+title Data Flow Diagram - Level 1
+
+!define PROCESS circle
+!define DATASTORE rectangle
+!define EXTERNAL actor
+
+EXTERNAL User as "Building\nOccupant"
+EXTERNAL Admin as "Facility\nManager"
+EXTERNAL Environment as "Physical\nEnvironment"
+
+PROCESS P1 as "1.0\nData\nAcquisition"
+PROCESS P2 as "2.0\nData\nProcessing"
+PROCESS P3 as "3.0\nPredictive\nAnalysis"
+PROCESS P4 as "4.0\nVisualization\n& Control"
+
+DATASTORE D1 as "D1: Sensor Logs"
+DATASTORE D2 as "D2: Device Registry"
+DATASTORE D3 as "D3: Predictions"
+DATASTORE D4 as "D4: User Sessions"
+
+' Data flows from environment
+Environment --> P1 : Raw sensor\nreadings
+P1 --> D1 : Validated\nsensor data
+P1 --> P2 : Real-time\ntelemetry
+
+' Processing flows
+P2 --> D1 : Processed\ndata
+D1 --> P3 : Historical\ndata
+P3 --> D3 : Prediction\nresults
+
+' User interactions
+User --> P4 : QR scan\nrequest
+P4 --> D1 : Query current\ndata
+P4 --> D3 : Query\npredictions
+D1 --> P4 : Sensor\nreadings
+D3 --> P4 : AQI\nforecasts
+P4 --> User : Dashboard\ndata
+
+' Admin interactions
+Admin --> P4 : Login\ncredentials
+P4 --> D4 : Session\ndata
+Admin --> P4 : Device\nmanagement
+P4 --> D2 : Device\noperations
+D2 --> P4 : Device\nstatus
+P4 --> Admin : Admin\ndashboard
+
+' Internal flows
+D2 --> P1 : Device\nconfiguration
+P2 --> P3 : Trigger\nprediction
+D1 --> P2 : Data\nvalidation
+
+@enduml

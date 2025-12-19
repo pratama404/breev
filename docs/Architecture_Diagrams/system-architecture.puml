@@ -1,0 +1,67 @@
+@startuml System Architecture
+!define RECTANGLE class
+
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+
+package "IoT Edge Layer" {
+  [ESP32 Controller] as ESP32
+  [MQ135 Gas Sensor] as MQ135
+  [DHT22 Temp/Humidity] as DHT22
+  
+  ESP32 --> MQ135 : ADC Read
+  ESP32 --> DHT22 : Digital Read
+}
+
+package "Communication Layer" {
+  [WiFi Network] as WiFi
+  [MQTT Broker (EMQX)] as MQTT
+  
+  ESP32 --> WiFi : 802.11 b/g/n
+  WiFi --> MQTT : TCP/IP
+}
+
+package "Data Processing Layer" {
+  [Node-RED Pipeline] as NodeRED
+  [Data Validation] as Validation
+  [MongoDB Database] as MongoDB
+  
+  MQTT --> NodeRED : Subscribe
+  NodeRED --> Validation : Process
+  Validation --> MongoDB : Store
+}
+
+package "Intelligence Layer" {
+  [AirPhyNet ML Service] as ML
+  [Physics Engine] as Physics
+  [Prediction API] as PredAPI
+  
+  MongoDB --> ML : Historical Data
+  ML --> Physics : LSTM + Advection-Diffusion
+  Physics --> PredAPI : Predictions
+}
+
+package "Application Layer" {
+  [Next.js Frontend] as Frontend
+  [Admin Dashboard] as Admin
+  [QR Code System] as QR
+  [Grafana Analytics] as Grafana
+  
+  MongoDB --> Frontend : Real-time Data
+  PredAPI --> Frontend : Predictions
+  Frontend --> Admin : Management
+  Frontend --> QR : Room Access
+  MongoDB --> Grafana : Analytics
+}
+
+package "User Interface" {
+  [Web Browser] as Browser
+  [Mobile Device] as Mobile
+  [QR Scanner] as Scanner
+  
+  Browser --> Frontend : HTTPS
+  Mobile --> Frontend : PWA
+  Scanner --> QR : Scan Code
+}
+
+@enduml

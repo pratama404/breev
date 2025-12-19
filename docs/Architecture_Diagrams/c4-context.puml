@@ -1,0 +1,31 @@
+@startuml C4 Context Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title System Context Diagram - AQI Monitoring System
+
+Person(occupant, "Building Occupant", "Person who works or visits the building")
+Person(admin, "Facility Manager", "Administrator who manages the IoT sensors and system")
+Person(researcher, "Data Scientist", "Researcher analyzing air quality patterns")
+
+System(aqi_system, "AQI Monitoring System", "IoT-based air quality monitoring with ML predictions")
+
+System_Ext(wifi, "WiFi Network", "Building wireless infrastructure")
+System_Ext(mobile, "Mobile Device", "Smartphone with camera for QR scanning")
+System_Ext(grafana, "Grafana Cloud", "External analytics and visualization platform")
+System_Ext(vercel, "Vercel Platform", "Cloud hosting for web application")
+
+Rel(occupant, aqi_system, "Scans QR codes, views air quality data", "HTTPS")
+Rel(occupant, mobile, "Uses camera to scan QR codes")
+Rel(mobile, aqi_system, "Accesses room dashboards", "HTTPS")
+
+Rel(admin, aqi_system, "Manages devices, generates QR codes", "HTTPS")
+Rel(admin, grafana, "Views advanced analytics", "HTTPS")
+
+Rel(researcher, aqi_system, "Exports data, analyzes patterns", "API")
+Rel(researcher, grafana, "Performs deep analysis", "HTTPS")
+
+Rel(aqi_system, wifi, "Sensor data transmission", "MQTT/WiFi")
+Rel(aqi_system, vercel, "Hosts web application", "Deploy")
+Rel(aqi_system, grafana, "Sends metrics data", "API")
+
+@enduml

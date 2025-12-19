@@ -1,0 +1,48 @@
+@startuml Activity - ML Prediction Process
+!theme plain
+
+title AirPhyNet Prediction Generation
+
+|Timer|
+start
+:Trigger prediction job (every 10 min);
+
+|ML Service|
+:Receive prediction request;
+:Query MongoDB for historical data;
+
+if (Sufficient data points?) then (no)
+  :Return error - insufficient data;
+  stop
+else (yes)
+  :Prepare data window (last 24 readings);
+endif
+
+:Normalize sensor data;
+:Create input tensor;
+
+|AirPhyNet Model|
+:LSTM forward pass;
+:Apply physics constraints;
+:Generate predictions (1-6 hours);
+
+|ML Service|
+:Post-process predictions;
+:Calculate confidence scores;
+:Format prediction response;
+
+|Database|
+:Store predictions;
+:Update timestamp;
+
+|Frontend|
+if (User viewing dashboard?) then (yes)
+  :Update prediction charts;
+  :Show future AQI trends;
+else (no)
+  :Cache for next request;
+endif
+
+stop
+
+@enduml

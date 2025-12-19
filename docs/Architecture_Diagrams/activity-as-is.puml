@@ -1,0 +1,46 @@
+@startuml Activity Diagram - As Is (Current State)
+!theme plain
+
+title Current Air Quality Monitoring Process (As-Is)
+
+start
+
+:Person enters room;
+
+if (Feels uncomfortable?) then (yes)
+  :Check if windows are open;
+  if (Windows closed?) then (yes)
+    :Open windows manually;
+  else (no)
+    :Assume ventilation is adequate;
+  endif
+else (no)
+  :Continue normal activities;
+endif
+
+:Work/stay in room;
+
+if (Feels drowsy or sick?) then (yes)
+  :Suspect poor air quality;
+  if (Has portable air quality meter?) then (yes)
+    :Check readings manually;
+    if (Poor reading?) then (yes)
+      :Take immediate action;
+      :Leave room or improve ventilation;
+    else (no)
+      :Assume other causes;
+    endif
+  else (no)
+    :Guess the problem;
+    :Try random solutions;
+  endif
+else (no)
+  :No awareness of air quality;
+endif
+
+:End of day;
+note right: No historical data\nNo predictive capability\nReactive approach only
+
+stop
+
+@enduml

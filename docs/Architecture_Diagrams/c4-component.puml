@@ -1,0 +1,52 @@
+@startuml C4 Component Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component Diagram - Web Application Container
+
+Container(mobile, "Mobile Device", "Browser/PWA", "User interface")
+Container(db, "Database", "MongoDB", "Data storage")
+Container(ml, "ML Service", "AirPhyNet API", "Predictions")
+
+Container_Boundary(web, "Web Application") {
+    Component(pages, "Page Components", "React/Next.js", "UI pages and layouts")
+    Component(components, "UI Components", "React", "Reusable UI elements")
+    Component(api_routes, "API Routes", "Next.js API", "Server-side endpoints")
+    Component(lib, "Utility Libraries", "JavaScript", "Helper functions and utilities")
+    
+    Component(home, "Home Page", "React", "Landing page with room list")
+    Component(room, "Room Dashboard", "React", "Real-time monitoring interface")
+    Component(admin, "Admin Panel", "React", "Device management interface")
+    Component(qr, "QR Generator", "React", "QR code creation component")
+    
+    Component(gauge, "AQI Gauge", "React", "Circular progress indicator")
+    Component(chart, "Trend Chart", "Recharts", "Time series visualization")
+    Component(table, "Data Table", "React", "Tabular data display")
+    
+    Component(device_api, "Device API", "Next.js", "Device CRUD operations")
+    Component(sensor_api, "Sensor API", "Next.js", "Sensor data endpoints")
+    Component(pred_api, "Prediction API", "Next.js", "ML prediction proxy")
+    
+    Component(db_lib, "Database Client", "MongoDB Driver", "Database connection")
+    Component(api_lib, "API Utilities", "JavaScript", "HTTP request helpers")
+    Component(auth_lib, "Auth Utilities", "NextAuth", "Authentication helpers")
+}
+
+Rel(mobile, pages, "Requests pages", "HTTPS")
+Rel(pages, components, "Uses", "React Props")
+Rel(pages, api_routes, "Calls", "HTTP")
+
+Rel(home, room, "Navigates to")
+Rel(admin, qr, "Uses")
+Rel(room, gauge, "Displays")
+Rel(room, chart, "Shows trends")
+Rel(admin, table, "Lists devices")
+
+Rel(api_routes, lib, "Uses utilities")
+Rel(device_api, db_lib, "Queries")
+Rel(sensor_api, db_lib, "Reads data")
+Rel(pred_api, api_lib, "Proxies requests")
+
+Rel(db_lib, db, "Connects to", "MongoDB Protocol")
+Rel(api_lib, ml, "Requests", "HTTP/REST")
+
+@enduml

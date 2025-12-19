@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production builds
+.next/
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# PlatformIO
+firmware/.pio/
+firmware/.pioenvs/
+firmware/.piolibdeps/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Secrets
+config.h
+secrets.json
+
+# ML Models
+*.pth
+*.pkl
+*.h5
+
+# Backup files
+*.bak
+*.backup

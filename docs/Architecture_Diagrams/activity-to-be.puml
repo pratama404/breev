@@ -1,0 +1,56 @@
+@startuml Activity Diagram - To Be (Future State)
+!theme plain
+
+title IoT Air Quality Monitoring System (To-Be)
+
+start
+
+:Person approaches room;
+
+:Scan QR code at entrance;
+
+:System displays real-time AQI;
+
+if (AQI > 100?) then (yes)
+  :Show health warning;
+  :Display recommendations;
+  if (Accept risk?) then (no)
+    :Choose different room;
+    stop
+  else (yes)
+    :Enter with precautions;
+  endif
+else (no)
+  :Safe to enter;
+endif
+
+:Enter room;
+
+:System continuously monitors;
+
+fork
+  :Sensors collect data every 30s;
+  :Data sent via MQTT;
+  :Stored in database;
+fork again
+  :AirPhyNet generates predictions;
+  :6-hour forecast updated;
+fork end
+
+if (Predicted AQI deterioration?) then (yes)
+  :Send early warning;
+  :Suggest preventive actions;
+  :Activate ventilation if automated;
+else (no)
+  :Continue monitoring;
+endif
+
+:Real-time dashboard updates;
+
+:Historical data logged for analysis;
+
+stop
+
+note right: Proactive monitoring\nPredictive capabilities\nData-driven decisions\nAutomated alerts
+
+@enduml

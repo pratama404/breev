@@ -1,0 +1,50 @@
+@startuml Navigation Structure
+!theme plain
+
+skinparam backgroundColor #FFFFFF
+
+package "Public Pages" {
+  [Home Page] as Home
+  [Room Monitoring] as Room
+  [QR Scan Result] as QRResult
+}
+
+package "Admin Pages" {
+  [Admin Login] as Login
+  [Admin Dashboard] as AdminDash
+  [Device Management] as DeviceMgmt
+  [QR Generator] as QRGen
+}
+
+package "API Endpoints" {
+  [/api/devices] as DeviceAPI
+  [/api/sensors/{id}] as SensorAPI
+  [/api/predictions/{id}] as PredAPI
+}
+
+package "External Services" {
+  [Grafana Dashboard] as Grafana
+  [AirPhyNet Service] as MLService
+}
+
+' Navigation flows
+Home --> Room : Select Room
+Home --> Login : Admin Access
+QRResult --> Room : Scan QR Code
+
+Login --> AdminDash : Authenticate
+AdminDash --> DeviceMgmt : Manage Devices
+AdminDash --> QRGen : Generate QR
+AdminDash --> Grafana : Analytics
+
+' API connections
+Room --> SensorAPI : Get Data
+Room --> PredAPI : Get Predictions
+DeviceMgmt --> DeviceAPI : CRUD Operations
+QRGen --> DeviceAPI : Device Info
+
+' External integrations
+PredAPI --> MLService : ML Predictions
+AdminDash --> Grafana : External Link
+
+@enduml

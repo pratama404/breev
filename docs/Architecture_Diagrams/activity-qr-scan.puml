@@ -1,0 +1,46 @@
+@startuml Activity - QR Code Scanning Process
+!theme plain
+
+title QR Code Scanning Feature
+
+|User|
+start
+:Approach room entrance;
+:Open camera app;
+:Point camera at QR code;
+
+|System|
+:Decode QR URL;
+:Extract sensor ID from URL;
+
+|Database|
+:Query sensor data;
+:Retrieve current readings;
+:Get historical data (24h);
+
+|ML Service|
+:Check for predictions;
+if (Predictions available?) then (yes)
+  :Return cached predictions;
+else (no)
+  :Generate new predictions;
+  :Cache results;
+endif
+
+|Frontend|
+:Render room dashboard;
+:Display AQI gauge;
+:Show trend graph;
+:Generate health recommendations;
+
+|User|
+:View room air quality;
+if (AQI acceptable?) then (yes)
+  :Enter room;
+else (no)
+  :Choose different room;
+endif
+
+stop
+
+@enduml

@@ -1,0 +1,40 @@
+@startuml C4 Container Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container Diagram - AQI Monitoring System
+
+Person(user, "Building Occupant", "Uses QR codes to access room data")
+Person(admin, "Facility Manager", "Manages sensors and system")
+
+System_Boundary(aqi, "AQI Monitoring System") {
+    Container(web, "Web Application", "Next.js, React", "Provides dashboard and admin interface")
+    Container(api, "API Gateway", "Next.js API Routes", "Handles HTTP requests and responses")
+    Container(mqtt, "MQTT Broker", "EMQX", "Message broker for IoT communication")
+    Container(pipeline, "Data Pipeline", "Node-RED", "Processes and validates sensor data")
+    Container(ml, "ML Service", "Python, FastAPI", "AirPhyNet predictions service")
+    Container(db, "Database", "MongoDB", "Stores sensor data and predictions")
+    Container(analytics, "Analytics", "Grafana", "Advanced data visualization")
+    Container(iot, "IoT Sensors", "ESP32, MQ135, DHT22", "Collects environmental data")
+}
+
+System_Ext(mobile, "Mobile Device", "Smartphone with QR scanner")
+System_Ext(vercel, "Vercel Platform", "Cloud hosting")
+
+Rel(user, mobile, "Scans QR codes")
+Rel(mobile, web, "Views dashboards", "HTTPS")
+Rel(admin, web, "Manages system", "HTTPS")
+
+Rel(web, api, "Makes requests", "HTTP")
+Rel(api, db, "Queries data", "MongoDB Protocol")
+Rel(api, ml, "Gets predictions", "HTTP/REST")
+
+Rel(iot, mqtt, "Publishes data", "MQTT")
+Rel(mqtt, pipeline, "Subscribes to topics", "MQTT")
+Rel(pipeline, db, "Stores data", "MongoDB Protocol")
+
+Rel(ml, db, "Reads historical data", "MongoDB Protocol")
+Rel(analytics, db, "Queries metrics", "MongoDB Protocol")
+
+Rel(web, vercel, "Deployed on", "Platform")
+
+@enduml

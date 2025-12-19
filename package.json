@@ -1,0 +1,36 @@
+{
+  "name": "aqi-iot-monitoring-system",
+  "version": "1.0.0",
+  "description": "IoT-based Air Quality Monitoring System with AirPhyNet ML Predictions",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd web-frontend && npm run dev",
+    "build": "cd web-frontend && npm run build",
+    "start": "cd web-frontend && npm start",
+    "backend": "cd backend-services && docker-compose up -d",
+    "backend-stop": "cd backend-services && docker-compose down",
+    "setup": "npm run backend && cd web-frontend && npm install && npm run dev",
+    "firmware": "cd firmware && pio run --target upload",
+    "monitor": "cd firmware && pio device monitor"
+  },
+  "keywords": [
+    "iot",
+    "air-quality",
+    "monitoring",
+    "esp32",
+    "mqtt",
+    "nextjs",
+    "machine-learning",
+    "physics-informed-neural-network"
+  ],
+  "author": "AQI Monitoring Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/aqi-iot-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/aqi-iot-system/issues"
+  },
+  "homepage": "https://github.com/your-username/aqi-iot-system#readme"
+}

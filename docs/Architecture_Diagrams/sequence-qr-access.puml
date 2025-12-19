@@ -1,0 +1,54 @@
+@startuml Sequence - QR Code Access
+!theme plain
+
+title QR Code Room Access Sequence
+
+actor "User" as User
+participant "Smartphone" as Phone
+participant "QR Code" as QR
+participant "Next.js Server" as Server
+participant "MongoDB" as DB
+participant "AirPhyNet API" as ML
+
+== QR Code Scanning ==
+
+User -> Phone: Open camera
+User -> QR: Point camera at code
+QR --> Phone: Decode URL
+Phone -> Server: HTTP GET /room/{sensor_id}
+
+== Server-Side Rendering ==
+
+Server -> DB: Query current sensor data
+activate DB
+DB --> Server: Latest readings
+deactivate DB
+
+Server -> DB: Query historical data (24h)
+activate DB
+DB --> Server: Historical dataset
+deactivate DB
+
+Server -> ML: GET /predictions/{sensor_id}
+activate ML
+ML -> DB: Check cached predictions
+DB --> ML: Prediction data
+ML --> Server: Prediction response
+deactivate ML
+
+== Page Generation ==
+
+Server -> Server: Render dashboard with data
+Server -> Server: Generate AQI gauge
+Server -> Server: Create trend charts
+Server --> Phone: Complete HTML page
+
+== User Interaction ==
+
+Phone -> Phone: Display room dashboard
+Phone -> User: Show AQI status
+User -> User: Make room entry decision
+
+note over User, ML: Entire process < 2 seconds
+
+@enduml

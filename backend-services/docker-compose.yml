@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  airphynet-service:
+    build: ./airphynet-model
+    container_name: airphynet-service
+    ports:
+      - "8000:8000"
+    environment:
+      # MongoDB Atlas (Cloud) configuration
+      - MONGODB_URI=mongodb+srv://breev:Breev123%23@cluster0.m5p4nkz.mongodb.net/?appName=Cluster0
+      
+      # EMQX Cloud (MQTT) configuration
+      - MQTT_BROKER=f8d02a91.ala.asia-southeast1.emqxsl.com
+      - MQTT_PORT=8883
+      - MQTT_TOPIC=aqi/sensor/+/telemetry
+      
+      # DagsHub / MLflow Configuration
+      - MLFLOW_TRACKING_URI=https://dagshub.com/pratama404/breev.mlflow
+      - MLFLOW_TRACKING_USERNAME=pratama404
+      - MLFLOW_TRACKING_PASSWORD=73f4bfa3ffbd9f843188cf856cbfc5665cf761fa
