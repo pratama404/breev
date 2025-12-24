@@ -9,32 +9,30 @@ Person(admin, "Facility Manager", "Manages sensors and system")
 System_Boundary(aqi, "AQI Monitoring System") {
     Container(web, "Web Application", "Next.js, React", "Provides dashboard and admin interface")
     Container(api, "API Gateway", "Next.js API Routes", "Handles HTTP requests and responses")
-    Container(mqtt, "MQTT Broker", "EMQX", "Message broker for IoT communication")
-    Container(pipeline, "Data Pipeline", "Node-RED", "Processes and validates sensor data")
-    Container(ml, "ML Service", "Python, FastAPI", "AirPhyNet predictions service")
-    Container(db, "Database", "MongoDB", "Stores sensor data and predictions")
-    Container(analytics, "Analytics", "Grafana", "Advanced data visualization")
-    Container(iot, "IoT Sensors", "ESP32, MQ135, DHT22", "Collects environmental data")
+    
+    Container(ingestor, "Data Ingestor", "Python, Paho-MQTT", "Subscribes to MQTT and stores to DB")
+    Container(ml, "Inference Service", "Python, FastAPI, PyTorch", "Provides AQI predictions via API")
+    
+    ContainerDb(db, "Timeseries Database", "MongoDB Atlas", "Stores sensor logs, users, and predictions")
+    Container(mqtt, "MQTT Broker", "EMQX Cloud", "Managed Message broker for IoT")
 }
 
 System_Ext(mobile, "Mobile Device", "Smartphone with QR scanner")
-System_Ext(vercel, "Vercel Platform", "Cloud hosting")
+System_Ext(dagshub, "DagsHub", "ML Experiment Tracking")
 
 Rel(user, mobile, "Scans QR codes")
 Rel(mobile, web, "Views dashboards", "HTTPS")
 Rel(admin, web, "Manages system", "HTTPS")
 
-Rel(web, api, "Makes requests", "HTTP")
+Rel(web, api, "Makes requests", "HTTP/JSON")
 Rel(api, db, "Queries data", "MongoDB Protocol")
-Rel(api, ml, "Gets predictions", "HTTP/REST")
+Rel(api, ml, "Requests predictions", "HTTP/REST")
+Rel(api, mqtt, "Publishes commands (optional)", "MQTTS")
 
-Rel(iot, mqtt, "Publishes data", "MQTT")
-Rel(mqtt, pipeline, "Subscribes to topics", "MQTT")
-Rel(pipeline, db, "Stores data", "MongoDB Protocol")
+Rel(mqtt, ingestor, "Pushes telemetry", "MQTTS")
+Rel(ingestor, db, "Stores sensor data", "MongoDB Protocol")
 
-Rel(ml, db, "Reads historical data", "MongoDB Protocol")
-Rel(analytics, db, "Queries metrics", "MongoDB Protocol")
-
-Rel(web, vercel, "Deployed on", "Platform")
+Rel(ml, db, "Fetches historical data", "MongoDB Protocol")
+Rel(ml, dagshub, "Logs metrics", "HTTPS")
 
 @enduml

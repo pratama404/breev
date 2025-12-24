@@ -1,0 +1,56 @@
+name: Automated Drift Check & Retraining
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-drift-and-retrain:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          pip install pandas numpy pymongo scipy python-dotenv mlflow dagshub torch
+
+      - name: Run Drift Detector
+        id: drift_check
+        continue-on-error: true # Allow job to continue even if drift is detected (exit code 1)
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          DB_NAME: aqi_monitoring
+          COLLECTION_NAME: sensor_logs
+        run: |
+          python backend-services/airphynet-model/drift_detector.py
+
+      - name: Retrain Model
+        if: steps.drift_check.outcome == 'failure' # Only run if drift detector exited with 1
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+          BC_DAGSHUB_REPO: ${{ secrets.BC_DAGSHUB_REPO }}
+        run: |
+          echo "Drift Detected! Starting Retraining..."
+          python backend-services/airphynet-model/train.py
+          
+      - name: Build and Push New Image (Optional)
+        if: steps.drift_check.outcome == 'failure' # Sync with retraining
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend-services/airphynet-model
+          file: ./backend-services/airphynet-model/Dockerfile
+          push: true
+          tags: pratama404/airphynet-service:latest
+          build-args: |
+             MONGODB_URI=${{ secrets.MONGODB_URI }}

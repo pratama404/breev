@@ -9,3 +9,5 @@ paho-mqtt==1.6.1
 mlflow==2.10.0
 dagshub==0.3.17
 prometheus-fastapi-instrumentator==7.0.0
+scipy==1.11.4
+pandas==2.1.4

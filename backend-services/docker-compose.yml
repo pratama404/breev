@@ -1,21 +1,28 @@
 version: '3.8'
 
 services:
-  airphynet-service:
+  inference-service:
     build: ./airphynet-model
-    container_name: airphynet-service
+    container_name: inference-service
+    command: uvicorn inference_api:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     environment:
-      # MongoDB Atlas (Cloud) configuration
-      - MONGODB_URI=mongodb+srv://breev:Breev123%23@cluster0.m5p4nkz.mongodb.net/?appName=Cluster0
-      
-      # EMQX Cloud (MQTT) configuration
-      - MQTT_BROKER=f8d02a91.ala.asia-southeast1.emqxsl.com
-      - MQTT_PORT=8883
-      - MQTT_TOPIC=aqi/sensor/+/telemetry
-      
-      # DagsHub / MLflow Configuration
-      - MLFLOW_TRACKING_URI=https://dagshub.com/pratama404/breev.mlflow
-      - MLFLOW_TRACKING_USERNAME=pratama404
-      - MLFLOW_TRACKING_PASSWORD=73f4bfa3ffbd9f843188cf856cbfc5665cf761fa
+      - MONGODB_URI=${MONGODB_URI}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+      - MLFLOW_TRACKING_USERNAME=${MLFLOW_TRACKING_USERNAME}
+      - MLFLOW_TRACKING_PASSWORD=${MLFLOW_TRACKING_PASSWORD}
+      - MLFLOW_MODEL_URI=models:/AirPhyNet/Production
+
+  ingestion-service:
+    build: ./airphynet-model
+    container_name: ingestion-service
+    command: python ingestor.py
+    restart: always
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT}
+      - MQTT_TOPIC=${MQTT_TOPIC}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}

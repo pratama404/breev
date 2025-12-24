@@ -1,0 +1,73 @@
+@startuml Flowchart - AirPhyNet Horizontal
+title Flowchart - AirPhyNet Modeling Process
+
+
+start
+
+:Start Pipeline;
+
+:Init DagsHub & MLflow; <<task>>
+
+partition "Drift Check & Data Loading" {
+    :Start Scheduled Job (Daily); <<task>>
+    :<b>Run Drift Detector</b>\n(KS-Test on Last 24h vs 7d);
+    
+    if (Drift Detected?) then (Yes)
+        :Fetch Training Data from MongoDB\n(Last 30 Days); <<load>>
+        :Dynamic Feature Selection;
+        :Create Time Series\n(Window Size = 24);
+    else (No)
+        :End Process (No Retraining);
+        stop
+    endif
+}
+
+' Percabangan untuk memisahkan Dataset
+fork
+    ' === JALUR ATAS: TRAINING ===
+    :Train Set; <<input>>
+    
+    partition "Model Initialization" {
+        :Init AirPhyNet Model\n(LSTM + Physics); <<task>>
+        :Define Loss (MSE) & Opt (Adam);
+    }
+
+    partition "Training Phase" {
+        ' Loop disederhanakan agar rapi di horizontal
+        :Start Training Loop;
+        while (Epoch < 50?) is (Yes)
+            :Forward Pass & Calc Loss;
+            :<b>Calc Physics Loss</b>\n(Advection-Diffusion);
+            :Update Weights;
+        endwhile (No)
+        :Log to MLflow; <<save>>
+    }
+
+fork again
+    ' === JALUR BAWAH: TESTING ===
+    :Test Set; <<input>>
+    
+    partition "Inference Prep" {
+        :Convert to Tensors;
+        :Create DataLoaders;
+    }
+end fork
+
+partition "Evaluation & Logging" {
+    :Predict on Test Set; <<task>>
+    :Calculate Metrics (MSE, R2);
+    
+    if (Metrics OK?) then (Yes)
+        :Log Metrics & Artifacts; <<save>>
+        :Register Model "AirPhyNet"; <<save>>
+        :<b>Promote to Production</b>; <<task>>
+    else (No)
+        :Tuning Hyperparams;
+        stop
+    endif
+}
+
+:End Process;
+
+stop
+@enduml
