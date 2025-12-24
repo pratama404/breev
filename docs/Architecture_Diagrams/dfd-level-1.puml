@@ -1,0 +1,49 @@
+@startuml DFD Level 1
+!theme plain
+title DFD Level 1 - System Overview
+
+' Compact Horizontal Layout
+left to right direction
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 40
+
+' Entities
+rectangle "IoT\nSensor" as Sensor
+rectangle "Building\nOccupant" as User
+rectangle "Facility\nManager" as Admin
+
+' Processes
+circle "1.0\nData\nAcq." as P1
+circle "2.0\nML\nPred." as P2
+circle "3.0\nUser\nInterface" as P3
+circle "4.0\nAdmin\nMgmt" as P4
+
+' Stores (Compact)
+database "D1\nLogs" as D1
+database "D2\nPreds" as D2
+database "D3\nReg." as D3
+database "D4\nUsers" as D4
+
+' Data Flow Path (Optimized for L -> R)
+Sensor --> P1 : Telemetry
+P1 --> D1 : Store
+P1 -.-> D3 : Validate
+
+P3 --> P2 : Request
+D1 -.-> P2 : History
+P2 --> D2 : Save
+P2 --> P3 : Result
+
+User --> P3 : View\nDash
+D1 -.-> P3 : Read
+D2 -.-> P3 : Read
+P3 --> User : Info
+
+Admin --> P4 : Login
+D4 -.-> P4 : Auth
+P4 --> D3 : Config
+P4 --> D4 : Users
+P4 --> Admin : Report
+
+@enduml

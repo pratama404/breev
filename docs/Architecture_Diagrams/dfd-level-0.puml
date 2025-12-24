@@ -1,0 +1,29 @@
+@startuml DFD Level 0
+!theme plain
+title DFD Level 0 - Context Diagram
+
+' Compact Layout
+left to right direction
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 40
+skinparam wrapWidth 150
+
+' Entities
+rectangle "Building\nOccupant" as User
+rectangle "Facility\nManager" as Admin
+rectangle "IoT\nSensor" as Sensor
+
+' Main Process
+circle "0.0\nAirPhyNet\nSystem" as System
+
+' Flows (Shortened Labels)
+User --> System : QR Scan\nRequest
+Admin --> System : Admin\nCommands
+Sensor --> System : Telemetry\nData
+
+System --> User : Dashboard\n& AQI Info
+System --> Admin : Reports\n& Alerts
+System --> Sensor : Config\n(Ack)
+
+@enduml

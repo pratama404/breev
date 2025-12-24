@@ -1,54 +1,35 @@
 @startuml Sequence - Sensor Data Flow
 !theme plain
+title Sensor Data Processing Sequence (BCE Pattern)
 
-title Sensor Data Collection and Processing
-
-participant "ESP32" as ESP32
-participant "MQ135 Sensor" as MQ135
-participant "DHT22 Sensor" as DHT22
-participant "WiFi Network" as WiFi
-participant "MQTT Broker" as MQTT
-participant "Node-RED" as NodeRED
-participant "MongoDB" as DB
-participant "Web Dashboard" as Web
-
-== Sensor Reading Cycle ==
-
-ESP32 -> MQ135: Read analog value (ADC)
-activate MQ135
-MQ135 --> ESP32: Raw sensor value
-deactivate MQ135
-
-ESP32 -> DHT22: Request temp/humidity
-activate DHT22
-DHT22 --> ESP32: Temperature & humidity data
-deactivate DHT22
-
-ESP32 -> ESP32: Calculate AQI from raw values
-ESP32 -> ESP32: Create JSON payload
+actor "IoT Device" as Act
+boundary "MQTTListener" as Bound
+control "DataIngestor" as Ctrl
+entity "SensorLog" as Ent
+database "MongoDB" as DB
 
 == Data Transmission ==
 
-ESP32 -> WiFi: Send MQTT packet
-WiFi -> MQTT: Forward to broker
-MQTT -> NodeRED: Publish to subscriber
+Act -> Bound: Publish Telemetry (MQTT)
+activate Bound
+Bound -> Ctrl: Forward Message
+activate Ctrl
 
 == Data Processing ==
 
-NodeRED -> NodeRED: Validate JSON structure
-NodeRED -> NodeRED: Add server timestamp
-NodeRED -> DB: Insert sensor log
+Ctrl -> Ctrl: Validate Payload
+Ctrl -> Ent: Create Log Object
+activate Ent
+Ent --> Ctrl: Validated Object
+deactivate Ent
 
-== Real-time Display ==
-
-Web -> DB: Query latest sensor data
+Ctrl -> DB: Insert One
 activate DB
-DB --> Web: Return current readings
+DB --> Ctrl: Acknowledge
 deactivate DB
 
-Web -> Web: Update dashboard
-Web -> Web: Refresh AQI gauge
-
-note over ESP32, Web: Process repeats every 30 seconds
+Ctrl --> Bound: Processed
+deactivate Ctrl
+deactivate Bound
 
 @enduml

@@ -43,7 +43,7 @@ def get_data(days_lookback=1):
         # We try 'received_at' first as per ingestor.py
         query = {"received_at": {"$gte": start_time}}
         
-        cursor = collection.find(query, {"pm25": 1, "aqi": 1, "_id": 0})
+        cursor = collection.find(query, {"co2_ppm": 1, "pm25": 1, "aqi": 1, "_id": 0})
         data = list(cursor)
         
         return pd.DataFrame(data)
@@ -73,14 +73,15 @@ def check_drift():
         logger.warning(f"Insufficient current samples ({len(current_df)}) for drift test.")
         sys.exit(0)
 
-    # Metric to check: PM2.5 or AQI (if pre-calculated)
-    # We'll prioritize PM25 as it's a raw input
-    metric = 'pm25'
+    # Metric to check: CO2 PPM (since we use MQ135)
+    metric = 'co2_ppm'
     if metric not in current_df.columns:
-        if 'aqi' in current_df.columns:
+        if 'pm25' in current_df.columns:
+            metric = 'pm25'
+        elif 'aqi' in current_df.columns:
             metric = 'aqi'
         else:
-            logger.error("No valid metric (pm25/aqi) found in data.")
+            logger.error("No valid metric (co2_ppm/pm25/aqi) found in data.")
             sys.exit(0)
             
     current_data = current_df[metric].dropna().values

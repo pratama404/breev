@@ -68,8 +68,9 @@ def train():
         df = pd.DataFrame(data)
         
         # Feature Engineering (Basic)
-        # Assuming columns: pm25, humidity, temperature, co - select available ones
-        features = ['pm25', 'humidity', 'temperature', 'co'] 
+        # Using columns from firmware: temperature, humidity, co2_ppm
+        # Target: co2_ppm
+        features = ['co2_ppm', 'humidity', 'temperature'] 
         available_features = [f for f in features if f in df.columns]
         
         if not available_features:
@@ -80,7 +81,7 @@ def train():
         
         # Prepare Sequences for LSTM
         # Input: (Batch, Seq_Len, Features)
-        # Output: (Batch, 1) -> Forecasting PM2.5/AQI
+        # Output: (Batch, 1) -> Forecasting CO2 PPM
         
         seq_length = 10
         data_values = df.values
@@ -88,7 +89,7 @@ def train():
         
         for i in range(len(data_values) - seq_length):
             X.append(data_values[i:i+seq_length])
-            y.append(data_values[i+seq_length, 0]) # Predicting 1st feature (e.g. pm25)
+            y.append(data_values[i+seq_length, 0]) # Predicting 1st feature (co2_ppm)
             
         X_train = torch.FloatTensor(np.array(X))
         y_train = torch.FloatTensor(np.array(y)).unsqueeze(1)

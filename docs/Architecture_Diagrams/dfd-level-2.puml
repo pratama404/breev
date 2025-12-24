@@ -1,0 +1,31 @@
+@startuml DFD Level 2
+!theme plain
+title DFD Level 2 - Process 2.0: ML Prediction
+
+' Compact Horizontal Layout
+left to right direction
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 30
+
+' Interfaces
+rectangle "3.0\nUI" as P3
+database "D1\nLogs" as D1
+database "D2\nPreds" as D2
+
+' Sub-processes
+circle "2.1\nReceive" as P2_1
+circle "2.2\nPre-\nprocess" as P2_2
+circle "2.3\nInfer" as P2_3
+circle "2.4\nOutput" as P2_4
+
+' Logic
+P3 --> P2_1 : Request
+P2_1 --> D1 : Query
+D1 -.-> P2_2 : Read
+P2_2 --> P2_3 : Vector
+P2_3 --> D2 : Save
+P2_3 --> P2_4 : Raw
+P2_4 --> P3 : JSON
+
+@enduml

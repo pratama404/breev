@@ -1,6 +1,7 @@
 @startuml Flowchart - AirPhyNet Horizontal
 title Flowchart - AirPhyNet Modeling Process
-
+!theme plain
+skinparam shadowng false
 
 start
 
@@ -8,64 +9,63 @@ start
 
 :Init DagsHub & MLflow; <<task>>
 
-partition "Drift Check & Data Loading" {
-    :Start Scheduled Job (Daily); <<task>>
+group "Drift Check & Data Loading"
+    :Start Scheduled Job (Daily);
     :<b>Run Drift Detector</b>\n(KS-Test on Last 24h vs 7d);
     
     if (Drift Detected?) then (Yes)
-        :Fetch Training Data from MongoDB\n(Last 30 Days); <<load>>
+        :Fetch Training Data from MongoDB\n(Last 30 Days);
         :Dynamic Feature Selection;
         :Create Time Series\n(Window Size = 24);
     else (No)
         :End Process (No Retraining);
         stop
     endif
-}
+end group
 
 ' Percabangan untuk memisahkan Dataset
 fork
     ' === JALUR ATAS: TRAINING ===
-    :Train Set; <<input>>
+    :Train Set;
     
-    partition "Model Initialization" {
-        :Init AirPhyNet Model\n(LSTM + Physics); <<task>>
+    group "Model Initialization"
+        :Init AirPhyNet Model\n(LSTM + Physics);
         :Define Loss (MSE) & Opt (Adam);
-    }
+    end group
 
-    partition "Training Phase" {
-        ' Loop disederhanakan agar rapi di horizontal
+    group "Training Phase"
         :Start Training Loop;
         while (Epoch < 50?) is (Yes)
             :Forward Pass & Calc Loss;
             :<b>Calc Physics Loss</b>\n(Advection-Diffusion);
             :Update Weights;
         endwhile (No)
-        :Log to MLflow; <<save>>
-    }
+        :Log to MLflow;
+    end group
 
 fork again
     ' === JALUR BAWAH: TESTING ===
-    :Test Set; <<input>>
+    :Test Set;
     
-    partition "Inference Prep" {
+    group "Inference Prep"
         :Convert to Tensors;
         :Create DataLoaders;
-    }
+    end group
 end fork
 
-partition "Evaluation & Logging" {
-    :Predict on Test Set; <<task>>
+group "Evaluation & Logging"
+    :Predict on Test Set;
     :Calculate Metrics (MSE, R2);
     
     if (Metrics OK?) then (Yes)
-        :Log Metrics & Artifacts; <<save>>
-        :Register Model "AirPhyNet"; <<save>>
-        :<b>Promote to Production</b>; <<task>>
+        :Log Metrics & Artifacts;
+        :Register Model "AirPhyNet";
+        :<b>Promote to Production</b>;
     else (No)
         :Tuning Hyperparams;
         stop
     endif
-}
+end group
 
 :End Process;
 

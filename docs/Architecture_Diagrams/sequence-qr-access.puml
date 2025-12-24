@@ -3,12 +3,11 @@
 
 title QR Code Room Access Sequence
 
-actor "User" as User
-participant "Smartphone" as Phone
-participant "QR Code" as QR
-participant "Next.js Server" as Server
-participant "MongoDB" as DB
-participant "AirPhyNet API" as ML
+actor "User" as Act
+boundary "RoomPage" as UI
+control "RoomController" as Ctrl
+entity "SensorData" as Ent
+database "MongoDB" as DB
 
 == QR Code Scanning ==
 

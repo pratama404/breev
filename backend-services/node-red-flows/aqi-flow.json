@@ -10,7 +10,11 @@
         "broker": "mqtt-broker",
         "x": 150,
         "y": 100,
-        "wires": [["validate-data"]]
+        "wires": [
+            [
+                "validate-data"
+            ]
+        ]
     },
     {
         "id": "validate-data",
@@ -20,7 +24,11 @@
         "func": "// Validate incoming sensor data\nif (!msg.payload || !msg.payload.sensor_id) {\n    node.error('Invalid sensor data', msg);\n    return null;\n}\n\n// Add server timestamp\nmsg.payload.server_timestamp = new Date().toISOString();\n\n// Validate numeric values\nif (isNaN(msg.payload.temperature) || isNaN(msg.payload.humidity)) {\n    node.error('Invalid sensor readings', msg);\n    return null;\n}\n\n// Add metadata\nmsg.payload.processed_at = Date.now();\n\nreturn msg;",
         "x": 350,
         "y": 100,
-        "wires": [["store-mongodb", "debug-output"]]
+        "wires": [
+            [
+                "debug-output"
+            ]
+        ]
     },
     {
         "id": "store-mongodb",
@@ -32,7 +40,11 @@
         "operation": "insert",
         "x": 550,
         "y": 100,
-        "wires": [["success-log"]]
+        "wires": [
+            [
+                "success-log"
+            ]
+        ]
     },
     {
         "id": "success-log",

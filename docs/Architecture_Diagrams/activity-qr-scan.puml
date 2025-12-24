@@ -1,46 +1,43 @@
 @startuml Activity - QR Code Scanning Process
 !theme plain
 
-title QR Code Scanning Feature
+title QR Code Scanning (BCE Flow)
+
+|Actor| User
+|Boundary| UI (RoomPage)
+|Control| RoomController
+|Entity| SensorData / DB
 
 |User|
 start
-:Approach room entrance;
-:Open camera app;
-:Point camera at QR code;
+:Scan QR Code;
 
-|System|
-:Decode QR URL;
-:Extract sensor ID from URL;
+|UI (RoomPage)|
+:Request Page Load;
 
-|Database|
-:Query sensor data;
-:Retrieve current readings;
-:Get historical data (24h);
+|RoomController|
+:Receive Request;
+:Call Fetch Data Service;
 
-|ML Service|
-:Check for predictions;
-if (Predictions available?) then (yes)
-  :Return cached predictions;
+|SensorData / DB|
+:Query Latest Readings;
+:Query Historical Data;
+:Query Predictions;
+
+|RoomController|
+if (Data Valid?) then (yes)
+  :Prepare Dashboard Props;
+  :Generate Charts;
 else (no)
-  :Generate new predictions;
-  :Cache results;
+  :Prepare Error Page;
 endif
 
-|Frontend|
-:Render room dashboard;
-:Display AQI gauge;
-:Show trend graph;
-:Generate health recommendations;
+|UI (RoomPage)|
+:Render Dashboard Page;
+:Display AQI Gauge & Graphs;
 
 |User|
-:View room air quality;
-if (AQI acceptable?) then (yes)
-  :Enter room;
-else (no)
-  :Choose different room;
-endif
-
+:View Room Status;
 stop
 
 @enduml
