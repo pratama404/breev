@@ -7,7 +7,7 @@ import { getHealthRecommendation } from '../../lib/api';
 export default function RoomMonitoring() {
   const router = useRouter();
   const { id } = router.query;
-  
+
   const [sensorData, setSensorData] = useState(null);
   const [historicalData, setHistoricalData] = useState([]);
   const [predictions, setPredictions] = useState([]);
@@ -25,15 +25,15 @@ export default function RoomMonitoring() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch current sensor data
       const sensorResponse = await fetch(`/api/sensors/${id}`);
       if (!sensorResponse.ok) throw new Error('Failed to fetch sensor data');
       const sensorResult = await sensorResponse.json();
-      
+
       setSensorData(sensorResult.current);
       setHistoricalData(sensorResult.historical);
-      
+
       // Fetch predictions
       try {
         const predResponse = await fetch(`/api/predictions/${id}`);
@@ -44,7 +44,7 @@ export default function RoomMonitoring() {
       } catch (predError) {
         console.log('Predictions not available:', predError);
       }
-      
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -112,7 +112,7 @@ export default function RoomMonitoring() {
           <div className="bg-white p-6 rounded-lg shadow-md text-center">
             <GaugeChart aqi={sensorData.aqi_calculated} size={150} />
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-lg font-semibold mb-4">Parameter Lingkungan</h3>
             <div className="space-y-3">
@@ -156,7 +156,7 @@ export default function RoomMonitoring() {
                 <thead>
                   <tr className="bg-gray-50">
                     <th className="px-4 py-2 text-left">Waktu</th>
-                    <th className="px-4 py-2 text-left">Prediksi AQI</th>
+                    <th className="px-4 py-2 text-left">Prediksi CO2 (ppm)</th>
                     <th className="px-4 py-2 text-left">Confidence</th>
                     <th className="px-4 py-2 text-left">Status</th>
                   </tr>
@@ -168,22 +168,21 @@ export default function RoomMonitoring() {
                         {new Date(pred.predicted_time).toLocaleString('id-ID')}
                       </td>
                       <td className="px-4 py-2 font-semibold">
-                        {Math.round(pred.predicted_aqi)}
+                        {Math.round(pred.predicted_co2)} ppm
                       </td>
                       <td className="px-4 py-2">
                         {Math.round(pred.confidence * 100)}%
                       </td>
                       <td className="px-4 py-2">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          pred.predicted_aqi <= 50 ? 'bg-green-100 text-green-800' :
-                          pred.predicted_aqi <= 100 ? 'bg-yellow-100 text-yellow-800' :
-                          pred.predicted_aqi <= 150 ? 'bg-orange-100 text-orange-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {pred.predicted_aqi <= 50 ? 'Baik' :
-                           pred.predicted_aqi <= 100 ? 'Sedang' :
-                           pred.predicted_aqi <= 150 ? 'Tidak Sehat (Sensitif)' :
-                           'Tidak Sehat'}
+                        <span className={`px-2 py-1 rounded-full text-xs ${pred.predicted_co2 <= 800 ? 'bg-green-100 text-green-800' :
+                          pred.predicted_co2 <= 1000 ? 'bg-yellow-100 text-yellow-800' :
+                            pred.predicted_co2 <= 1500 ? 'bg-orange-100 text-orange-800' :
+                              'bg-red-100 text-red-800'
+                          }`}>
+                          {pred.predicted_co2 <= 800 ? 'Normal' :
+                            pred.predicted_co2 <= 1000 ? 'Sedang' :
+                              pred.predicted_co2 <= 1500 ? 'Kurang Sehat' :
+                                'Bahaya'}
                         </span>
                       </td>
                     </tr>

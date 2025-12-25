@@ -91,7 +91,8 @@ def predict_aqi(model, sensor_data, hours_ahead=6):
         # Make prediction
         prediction = model(input_tensor)
         
-        # Convert to AQI scale (0-500)
-        aqi_prediction = torch.clamp(prediction * 100, 0, 500)
+        # Convert to CO2 PPM (Scale 0-5000 approx)
+        # Using 5000 as a safe upper bound for indoor CO2
+        co2_prediction = torch.clamp(prediction * 100, 0, 5000)
         
-        return aqi_prediction.item()
+        return co2_prediction.item()

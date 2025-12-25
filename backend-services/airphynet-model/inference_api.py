@@ -96,12 +96,12 @@ async def predict_air_quality(request: PredictionRequest):
             
             # Use the last 10 data points for prediction
             input_data = historical_data[-10:]
-            predicted_aqi = predict_aqi(model, input_data, hour)
+            predicted_co2 = predict_aqi(model, input_data, hour)
             
             predictions.append({
                 "hour": hour,
                 "predicted_time": future_time.isoformat(),
-                "predicted_aqi": round(predicted_aqi, 2),
+                "predicted_co2": round(predicted_co2, 2),
                 "confidence": 0.85
             })
         
