@@ -26,6 +26,15 @@ services:
       - MQTT_TOPIC=${MQTT_TOPIC}
       - MQTT_PASSWORD=${MQTT_PASSWORD}
 
+  node-red:
+    image: nodered/node-red:latest
+    container_name: node-red
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./node-red-flows:/data
+    restart: always
+
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -37,6 +46,8 @@ services:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
