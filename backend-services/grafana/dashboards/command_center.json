@@ -1,0 +1,271 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": null,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 1,
+            "panels": [],
+            "title": "IoT Layer (Sensor Health & Connectivity)",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 1
+            },
+            "id": 10,
+            "options": {
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "mean"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showThresholdLabels": false,
+                "showThresholdMarkers": true
+            },
+            "targets": [
+                {
+                    "expr": "sensor_rssi_dbm",
+                    "legendFormat": "RSSI ({{sensor_id}})",
+                    "refId": "A"
+                }
+            ],
+            "title": "WiFi Signal (RSSI)",
+            "type": "gauge"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 6,
+                "y": 1
+            },
+            "id": 11,
+            "targets": [
+                {
+                    "expr": "sensor_uptime_seconds / 3600",
+                    "legendFormat": "Uptime ({{sensor_id}})",
+                    "refId": "A"
+                }
+            ],
+            "title": "Sensor Uptime (Hours)",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 1
+            },
+            "id": 2,
+            "targets": [
+                {
+                    "expr": "sensor_co2_ppm",
+                    "legendFormat": "CO2 ({{sensor_id}})",
+                    "refId": "A"
+                }
+            ],
+            "title": "Real-time CO2 (PPM)",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "id": 12,
+            "panels": [],
+            "title": "Infrastructure Layer (Server Health)",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 0,
+                "y": 10
+            },
+            "id": 13,
+            "targets": [
+                {
+                    "expr": "sum(container_memory_usage_bytes{name=~\"inference-service|ingestion-service|mongodb|node-red\"}) by (name) / 1024 / 1024",
+                    "legendFormat": "{{name}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "RAM Usage per Container (MB)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 8,
+                "y": 10
+            },
+            "id": 14,
+            "targets": [
+                {
+                    "expr": "rate(container_cpu_usage_seconds_total{name=~\"inference-service|ingestion-service|mongodb|node-red\"}[1m]) * 100",
+                    "legendFormat": "{{name}}",
+                    "refId": "A"
+                }
+            ],
+            "title": "CPU Usage %",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 8,
+                "x": 16,
+                "y": 10
+            },
+            "id": 8,
+            "targets": [
+                {
+                    "expr": "mongodb_mongod_connections{state=\"current\"}",
+                    "legendFormat": "Active Connections",
+                    "refId": "A"
+                }
+            ],
+            "title": "MongoDB Active Connections",
+            "type": "stat"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 18
+            },
+            "id": 6,
+            "panels": [],
+            "title": "ML & Backend Layer",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 19
+            },
+            "id": 7,
+            "targets": [
+                {
+                    "expr": "rate(http_requests_total{job=\"airphynet-inference\"}[1m])",
+                    "legendFormat": "{{handler}} (RPS)",
+                    "refId": "A"
+                }
+            ],
+            "title": "API Traffic (Requests/Sec)",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 19
+            },
+            "id": 15,
+            "targets": [
+                {
+                    "expr": "http_request_duration_seconds_sum{job=\"airphynet-inference\"} / http_request_duration_seconds_count{job=\"airphynet-inference\"}",
+                    "legendFormat": "Avg Latency",
+                    "refId": "A"
+                }
+            ],
+            "title": "API Latency (Seconds)",
+            "type": "timeseries"
+        }
+    ],
+    "refresh": "5s",
+    "schemaVersion": 38,
+    "style": "dark",
+    "tags": [
+        "AirPhyNet",
+        "Command Center"
+    ],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "now-1h",
+        "to": "now"
+    },
+    "title": "AirPhyNet Command Center (Ultimate)",
+    "uid": "airphynet-ultimate",
+    "version": 1,
+    "weekStart": ""
+}

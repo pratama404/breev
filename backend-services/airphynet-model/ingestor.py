@@ -2,10 +2,12 @@ import os
 import json
 import logging
 import ssl
+import threading
 from datetime import datetime
 import paho.mqtt.client as mqtt
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from prometheus_client import start_http_server, Gauge, Counter
 
 # Load environment variables
 load_dotenv()
@@ -28,6 +30,15 @@ if not MONGODB_URI:
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Prometheus Metrics
+SENSOR_TEMP = Gauge('sensor_temperature_celsius', 'Temperature from sensor', ['sensor_id'])
+SENSOR_HUM = Gauge('sensor_humidity_percent', 'Humidity from sensor', ['sensor_id'])
+SENSOR_CO2 = Gauge('sensor_co2_ppm', 'CO2 PPM from sensor', ['sensor_id'])
+SENSOR_AQI = Gauge('sensor_aqi', 'Calculated AQI from sensor', ['sensor_id'])
+SENSOR_RSSI = Gauge('sensor_rssi_dbm', 'WiFi Signal Strength (dBm)', ['sensor_id'])
+SENSOR_UPTIME = Gauge('sensor_uptime_seconds', 'Sensor Uptime in seconds', ['sensor_id'])
+MSG_COUNTER = Counter('sensor_messages_total', 'Total MQTT messages received', ['sensor_id'])
 
 # MongoDB Connection
 try:
@@ -60,6 +71,17 @@ def on_message(client, userdata, msg):
         if 'sensor_id' not in data and len(topic_parts) >= 3:
             data['sensor_id'] = topic_parts[2]
 
+        sid = data.get('sensor_id', 'unknown')
+        
+        # Update Metrics
+        MSG_COUNTER.labels(sensor_id=sid).inc()
+        if 'temperature' in data: SENSOR_TEMP.labels(sensor_id=sid).set(data['temperature'])
+        if 'humidity' in data: SENSOR_HUM.labels(sensor_id=sid).set(data['humidity'])
+        if 'co2_ppm' in data: SENSOR_CO2.labels(sensor_id=sid).set(data['co2_ppm'])
+        if 'aqi_calculated' in data: SENSOR_AQI.labels(sensor_id=sid).set(data['aqi_calculated'])
+        if 'rssi' in data: SENSOR_RSSI.labels(sensor_id=sid).set(data['rssi'])
+        if 'uptime' in data: SENSOR_UPTIME.labels(sensor_id=sid).set(data['uptime'])
+
         # Add server-side timestamps
         data['received_at'] = datetime.utcnow()
         if 'timestamp' in data:
@@ -89,6 +111,14 @@ client.on_connect = on_connect
 client.on_message = on_message
 
 logger.info(f"Connecting to MQTT Broker: {MQTT_BROKER}:{MQTT_PORT}...")
+
+# Start Prometheus Client Server
+try:
+    start_http_server(8001)
+    logger.info("Prometheus metrics server started on port 8001")
+except Exception as e:
+    logger.error(f"Failed to start Prometheus server: {e}")
+
 try:
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
     client.loop_forever()

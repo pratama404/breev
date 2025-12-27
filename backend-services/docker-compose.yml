@@ -17,8 +17,8 @@ services:
   ingestion-service:
     build: ./airphynet-model
     container_name: ingestion-service
-    command: python ingestor.py
-    restart: always
+    ports:
+      - "8001:8001" # Prometheus Metrics
     environment:
       - MONGODB_URI=${MONGODB_URI}
       - MQTT_BROKER=${MQTT_BROKER}
@@ -27,13 +27,20 @@ services:
       - MQTT_PASSWORD=${MQTT_PASSWORD}
 
   node-red:
-    image: nodered/node-red:latest
+    build: ./node-red
     container_name: node-red
     ports:
       - "1880:1880"
     volumes:
       - ./node-red-flows:/data
     restart: always
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.39.0
+    command:
+      - '--mongodb.uri=${MONGODB_URI}'
+    ports:
+      - "9216:9216"
 
   prometheus:
     image: prom/prometheus:latest
@@ -48,7 +55,19 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
