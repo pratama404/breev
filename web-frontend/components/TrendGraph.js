@@ -40,7 +40,7 @@ export default function TrendGraph({ data, predictions = [] }) {
             interval="preserveStartEnd"
           />
           <YAxis
-            domain={[0, 200]}
+            domain={['auto', 'auto']}
             tick={{ fontSize: 12 }}
           />
           <Tooltip
@@ -66,7 +66,7 @@ export default function TrendGraph({ data, predictions = [] }) {
           {/* Prediction line */}
           <Line
             type="monotone"
-            dataKey="aqi_calculated"
+            dataKey="value"
             stroke="#dc2626"
             strokeWidth={2}
             strokeDasharray="5 5"
@@ -74,7 +74,7 @@ export default function TrendGraph({ data, predictions = [] }) {
             connectNulls={false}
             name="Prediksi"
             data={predictions.map(pred => ({
-              aqi_calculated: pred.predicted_aqi,
+              value: pred.predicted_co2,
               time: new Date(pred.predicted_time).toLocaleTimeString('id-ID', {
                 hour: '2-digit',
                 minute: '2-digit'
