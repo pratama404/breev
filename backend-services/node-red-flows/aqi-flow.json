@@ -1,77 +1,251 @@
 [
     {
+        "id": "ui_tab_monitor",
+        "type": "ui_tab",
+        "name": "Monitor & Alert",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "ui_tab_control",
+        "type": "ui_tab",
+        "name": "Control Center",
+        "icon": "settings",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "group1",
+        "type": "ui_group",
+        "name": "Real-time Metrics",
+        "tab": "ui_tab_monitor",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "group2",
+        "type": "ui_group",
+        "name": "Historical Data",
+        "tab": "ui_tab_monitor",
+        "order": 2,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "group3",
+        "type": "ui_group",
+        "name": "Device Control",
+        "tab": "ui_tab_control",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
         "id": "mqtt-in",
         "type": "mqtt in",
-        "z": "flow1",
+        "z": "flow2",
         "name": "AQI Sensor Data",
         "topic": "aqi/sensor/+/telemetry",
         "qos": "1",
         "datatype": "json",
         "broker": "mqtt-broker",
-        "x": 150,
+        "x": 130,
         "y": 100,
         "wires": [
             [
-                "validate-data"
+                "validate-ui",
+                "alert-logic"
             ]
         ]
     },
     {
-        "id": "validate-data",
+        "id": "validate-ui",
         "type": "function",
-        "z": "flow1",
-        "name": "Validate & Process",
-        "func": "// Validate incoming sensor data\nif (!msg.payload || !msg.payload.sensor_id) {\n    node.error('Invalid sensor data', msg);\n    return null;\n}\n\n// Add server timestamp\nmsg.payload.server_timestamp = new Date().toISOString();\n\n// Validate numeric values\nif (isNaN(msg.payload.temperature) || isNaN(msg.payload.humidity)) {\n    node.error('Invalid sensor readings', msg);\n    return null;\n}\n\n// Add metadata\nmsg.payload.processed_at = Date.now();\n\nreturn msg;",
-        "x": 350,
+        "z": "flow2",
+        "name": "Parse & Route",
+        "func": "if (!msg.payload) return null;\n\nvar tempMsg = { payload: msg.payload.temperature };\nvar co2Msg = { payload: msg.payload.co2_ppm };\nvar rssiMsg = { payload: msg.payload.rssi || 0 };\n\nreturn [tempMsg, co2Msg, rssiMsg];",
+        "outputs": 3,
+        "x": 330,
         "y": 100,
         "wires": [
             [
-                "debug-output"
+                "ui-temp"
+            ],
+            [
+                "ui-co2",
+                "ui-co2-chart"
+            ],
+            [
+                "ui-rssi"
             ]
         ]
     },
     {
-        "id": "store-mongodb",
-        "type": "mongodb4",
-        "z": "flow1",
-        "name": "Store to MongoDB",
-        "clientId": "mongodb-client",
-        "collection": "sensor_logs",
-        "operation": "insert",
-        "x": 550,
-        "y": 100,
-        "wires": [
-            [
-                "success-log"
-            ]
-        ]
+        "id": "ui-temp",
+        "type": "ui_gauge",
+        "z": "flow2",
+        "name": "Temperature",
+        "group": "group1",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Temperature",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 50,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "x": 560,
+        "y": 60,
+        "wires": []
     },
     {
-        "id": "success-log",
-        "type": "debug",
-        "z": "flow1",
-        "name": "Success Log",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "x": 750,
+        "id": "ui-co2",
+        "type": "ui_gauge",
+        "z": "flow2",
+        "name": "CO2 PPM",
+        "group": "group1",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "CO2 Level",
+        "label": "ppm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 2000,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "x": 560,
         "y": 100,
         "wires": []
     },
     {
-        "id": "debug-output",
-        "type": "debug",
-        "z": "flow1",
-        "name": "Debug Data",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
+        "id": "ui-co2-chart",
+        "type": "ui_chart",
+        "z": "flow2",
+        "name": "CO2 Trend",
+        "group": "group2",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "CO2 Trend (1h)",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "1",
+        "removeOlderUnit": "3600",
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e"
+        ],
+        "x": 560,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ui-rssi",
+        "type": "ui_text",
+        "z": "flow2",
+        "group": "group1",
+        "order": 3,
+        "name": "WiFi Signal",
+        "label": "RSSI (dBm)",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
         "x": 550,
-        "y": 160,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "alert-logic",
+        "type": "function",
+        "z": "flow2",
+        "name": "Check Thresholds",
+        "func": "var co2 = msg.payload.co2_ppm;\nif (co2 > 1500) {\n    return { payload: \"WARNING: High CO2 Detected! \" + co2 + \" ppm\" };\n}\nreturn null;",
+        "outputs": 1,
+        "x": 330,
+        "y": 240,
+        "wires": [
+            [
+                "ui-alert-toast",
+                "debug-alert"
+            ]
+        ]
+    },
+    {
+        "id": "ui-alert-toast",
+        "type": "ui_toast",
+        "z": "flow2",
+        "position": "top right",
+        "displayTime": "3",
+        "name": "Alert Notification",
+        "x": 570,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "debug-alert",
+        "type": "debug",
+        "z": "flow2",
+        "name": "Alert Debug",
+        "active": true,
+        "complete": "payload",
+        "x": 560,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "ui-control-restart",
+        "type": "ui_button",
+        "z": "flow2",
+        "name": "Restart Sensor",
+        "group": "group3",
+        "order": 1,
+        "label": "RESTART SENSOR",
+        "payload": "{\"cmd\": \"restart\"}",
+        "payloadType": "json",
+        "topic": "aqi/sensor/control",
+        "x": 140,
+        "y": 380,
+        "wires": [
+            [
+                "mqtt-out-control"
+            ]
+        ]
+    },
+    {
+        "id": "mqtt-out-control",
+        "type": "mqtt out",
+        "z": "flow2",
+        "name": "Send Command",
+        "topic": "aqi/sensor/all/control",
+        "broker": "mqtt-broker",
+        "x": 380,
+        "y": 380,
         "wires": []
     },
     {
@@ -80,22 +254,6 @@
         "name": "EMQX Broker",
         "broker": "emqx",
         "port": "1883",
-        "clientid": "node-red-client",
-        "usetls": false,
-        "protocolVersion": "4",
-        "keepalive": "60",
-        "cleansession": true
-    },
-    {
-        "id": "mongodb-client",
-        "type": "mongodb4-client",
-        "name": "MongoDB Client",
-        "protocol": "mongodb",
-        "hostname": "mongodb",
-        "port": "27017",
-        "dbname": "aqi_monitoring",
-        "authsource": "admin",
-        "username": "admin",
-        "password": "password123"
+        "clientid": "node-red-dashboard"
     }
 ]
