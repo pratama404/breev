@@ -1,55 +1,47 @@
 @startuml Data Flow Diagram
 !theme plain
 
-title Data Flow Diagram - Level 1
+title Data Flow Diagram - Level 1 (AirPhyNet)
 
 !define PROCESS circle
 !define DATASTORE rectangle
 !define EXTERNAL actor
 
+EXTERNAL Sensor as "IoT Sensor\n(ESP32)"
 EXTERNAL User as "Building\nOccupant"
-EXTERNAL Admin as "Facility\nManager"
-EXTERNAL Environment as "Physical\nEnvironment"
+EXTERNAL Admin as "System\nAdmin"
+EXTERNAL Cloud as "DagsHub\n(MLflow)"
 
-PROCESS P1 as "1.0\nData\nAcquisition"
-PROCESS P2 as "2.0\nData\nProcessing"
-PROCESS P3 as "3.0\nPredictive\nAnalysis"
-PROCESS P4 as "4.0\nVisualization\n& Control"
+PROCESS P1 as "1.0\nData\nIngestion"
+PROCESS P2 as "2.0\nML Model\nTraining"
+PROCESS P3 as "3.0\nData\nServing"
 
 DATASTORE D1 as "D1: Sensor Logs"
 DATASTORE D2 as "D2: Device Registry"
-DATASTORE D3 as "D3: Predictions"
-DATASTORE D4 as "D4: User Sessions"
+DATASTORE D3 as "D3: Model Registry"
 
-' Data flows from environment
-Environment --> P1 : Raw sensor\nreadings
-P1 --> D1 : Validated\nsensor data
-P1 --> P2 : Real-time\ntelemetry
+' Data Acquisition Flow
+Sensor --> P1 : MQTT Telemetry\n(JSON Payload)
+P1 --> D1 : Store Readings\n(TimeSeries)
+P1 --> D2 : Update Last Seen\n(Heartbeat)
 
-' Processing flows
-P2 --> D1 : Processed\ndata
-D1 --> P3 : Historical\ndata
-P3 --> D3 : Prediction\nresults
+' ML Pipeline Flow
+D1 --> P2 : Fetch Historical\nData (Batch)
+P2 --> Cloud : Log Experiments\n(Metrics, Params)
+P2 --> D3 : Save Best Model\n(.pth)
 
-' User interactions
-User --> P4 : QR scan\nrequest
-P4 --> D1 : Query current\ndata
-P4 --> D3 : Query\npredictions
-D1 --> P4 : Sensor\nreadings
-D3 --> P4 : AQI\nforecasts
-P4 --> User : Dashboard\ndata
+' User Interaction Flow
+User --> P3 : Scan QR Code\n(Get Room Data)
+P3 --> D1 : Query Latest AQI
+D1 --> P3 : Return Sensor Data
+P3 --> User : Render Gauge & Recs
 
-' Admin interactions
-Admin --> P4 : Login\ncredentials
-P4 --> D4 : Session\ndata
-Admin --> P4 : Device\nmanagement
-P4 --> D2 : Device\noperations
-D2 --> P4 : Device\nstatus
-P4 --> Admin : Admin\ndashboard
-
-' Internal flows
-D2 --> P1 : Device\nconfiguration
-P2 --> P3 : Trigger\nprediction
-D1 --> P2 : Data\nvalidation
+' Admin Interaction Flow
+Admin --> P3 : View Dashboard
+P3 --> D2 : Query Device Status
+D2 --> P3 : Return Online/Offline
+P3 --> D1 : Aggregate Metrics
+D1 --> P3 : Avg AQI / CO2 Trends
+P3 --> Admin : Render Charts & Lists
 
 @enduml

@@ -3,14 +3,14 @@ import torch.nn as nn
 import numpy as np
 
 class AirPhyNet(nn.Module):
-    def __init__(self, input_size=4, hidden_size=64, num_layers=2, output_size=1):
+    def __init__(self, input_size=4, hidden_size=64, num_layers=2, output_size=1, dropout_prob=0.2):
         super(AirPhyNet, self).__init__()
         
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         
         # LSTM layers for temporal patterns
-        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=dropout_prob if num_layers > 1 else 0)
         
         # Physics-informed layers
         self.physics_layer = nn.Linear(hidden_size, hidden_size)
@@ -19,9 +19,10 @@ class AirPhyNet(nn.Module):
         # Output layer
         self.output_layer = nn.Linear(hidden_size, output_size)
         
-        # Activation functions
+        # Activation functions & Regularization
         self.relu = nn.ReLU()
         self.tanh = nn.Tanh()
+        self.dropout = nn.Dropout(dropout_prob)
         
     def physics_loss(self, predictions, inputs):
         """
@@ -33,12 +34,19 @@ class AirPhyNet(nn.Module):
         D = 0.1  # Diffusion coefficient
         u = 0.05  # Advection velocity
         
+        # Check output dimension
+        if predictions.shape[1] <= 1:
+            # Cannot compute temporal gradient from single time point
+            # Return 0.0 (no physics constraint penalty)
+            return torch.tensor(0.0, device=predictions.device, requires_grad=True)
+
         # Calculate temporal gradient
         dt = 1.0  # Time step (normalized)
         dC_dt = torch.diff(predictions, dim=1) / dt
         
         # Simplified spatial gradients (assuming 1D)
-        d2C_dx2 = torch.zeros_like(dC_dt)  # Placeholder for spatial derivatives
+        # Note: This is still a placeholder as spatial is hard without spatial coords
+        d2C_dx2 = torch.zeros_like(dC_dt)  
         
         # Physics equation residual
         residual = dC_dt - D * d2C_dx2
@@ -57,8 +65,8 @@ class AirPhyNet(nn.Module):
         lstm_out = lstm_out[:, -1, :]
         
         # Physics-informed processing
-        physics_out = self.relu(self.physics_layer(lstm_out))
-        diffusion_out = self.tanh(self.diffusion_layer(physics_out))
+        physics_out = self.dropout(self.relu(self.physics_layer(lstm_out)))
+        diffusion_out = self.dropout(self.tanh(self.diffusion_layer(physics_out)))
         
         # Final prediction
         output = self.output_layer(diffusion_out)

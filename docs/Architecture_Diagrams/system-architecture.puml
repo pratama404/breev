@@ -18,50 +18,43 @@ package "Communication Layer" {
   [MQTT Broker (EMQX)] as MQTT
   
   ESP32 --> WiFi : 802.11 b/g/n
-  WiFi --> MQTT : TCP/IP
+  WiFi --> MQTT : TCP/IP (SSL/TLS)
 }
 
 package "Data Processing Layer" {
-  [Node-RED Pipeline] as NodeRED
-  [Data Validation] as Validation
-  [MongoDB Database] as MongoDB
+  [Ingestor Service] as Ingestor
+  [MongoDB Atlas] as MongoDB
   
-  MQTT --> NodeRED : Subscribe
-  NodeRED --> Validation : Process
-  Validation --> MongoDB : Store
+  MQTT --> Ingestor : Subscribe (aqi/sensor/+/telemetry)
+  Ingestor --> MongoDB : Store Sensor Logs
 }
 
 package "Intelligence Layer" {
-  [AirPhyNet ML Service] as ML
-  [Physics Engine] as Physics
-  [Prediction API] as PredAPI
+  [AirPhyNet Model (PyTorch)] as ML
+  [Hyperparam Search] as Tuner
+  [DagsHub (MLflow)] as DagsHub
   
-  MongoDB --> ML : Historical Data
-  ML --> Physics : LSTM + Advection-Diffusion
-  Physics --> PredAPI : Predictions
+  MongoDB --> ML : Training Data
+  Tuner --> ML : Optimize Parameters
+  ML --> DagsHub : Log Metrics & Artifacts
 }
 
 package "Application Layer" {
-  [Next.js Frontend] as Frontend
+  [Next.js API Gateway] as API
   [Admin Dashboard] as Admin
-  [QR Code System] as QR
-  [Grafana Analytics] as Grafana
+  [QR Scan Page] as Public
   
-  MongoDB --> Frontend : Real-time Data
-  PredAPI --> Frontend : Predictions
-  Frontend --> Admin : Management
-  Frontend --> QR : Room Access
-  MongoDB --> Grafana : Analytics
+  MongoDB --> API : Fetch Data
+  API --> Admin : Device Status & Metrics
+  API --> Public : Real-time AQI & Gauges
 }
 
 package "User Interface" {
-  [Web Browser] as Browser
-  [Mobile Device] as Mobile
-  [QR Scanner] as Scanner
+  [Admin PC] as PC
+  [Mobile User] as Mobile
   
-  Browser --> Frontend : HTTPS
-  Mobile --> Frontend : PWA
-  Scanner --> QR : Scan Code
+  PC --> Admin : Manage System
+  Mobile --> Public : Scan QR
 }
 
 @enduml

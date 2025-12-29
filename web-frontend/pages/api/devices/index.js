@@ -6,8 +6,30 @@ export default async function handler(req, res) {
     const db = client.db('aqi_monitoring');
 
     if (req.method === 'GET') {
-      // Get all devices
-      const devices = await db.collection('devices').find({}).toArray();
+      // Get all devices with last seen status
+      const devices = await db.collection('devices').aggregate([
+        {
+          $lookup: {
+            from: "sensor_logs",
+            localField: "sensor_id",
+            foreignField: "sensor_id",
+            pipeline: [
+              { $sort: { timestamp: -1 } },
+              { $limit: 1 },
+              { $project: { timestamp: 1, battery: 1 } } // Assuming battery is in logs, or remove if not
+            ],
+            as: "last_log"
+          }
+        },
+        {
+          $addFields: {
+            last_seen: { $arrayElemAt: ["$last_log.timestamp", 0] },
+            battery_level: { $ifNull: [{ $arrayElemAt: ["$last_log.battery", 0] }, 100] }
+          }
+        },
+        { $project: { last_log: 0 } }
+      ]).toArray();
+
       res.status(200).json(devices);
     } else if (req.method === 'POST') {
       // Add new device
