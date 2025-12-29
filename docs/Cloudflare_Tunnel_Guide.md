@@ -6,6 +6,14 @@ Panduan ini untuk Anda yang **tidak memiliki domain sendiri** di Cloudflare dan 
 
 Cara ini akan menghasilkan URL acak (misal: `https://slap-giggle-random.trycloudflare.com`) setiap kali dijalankan.
 
+Untuk menjalankan banyak tunnel sekaligus, gunakan `tmux` atau `screen`.
+
+```bash
+tmux new -s tunnelku
+```
+
+tmux attach -t tunnelku
+
 ### A. Expose Backend API (Port 8000)
 ```bash
 cloudflared tunnel --url http://localhost:8000
