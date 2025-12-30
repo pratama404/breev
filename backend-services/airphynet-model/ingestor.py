@@ -109,7 +109,7 @@ if MQTT_TRANSPORT == "websockets":
 if MQTT_USERNAME and MQTT_PASSWORD:
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
-if MQTT_PORT == 8883:
+if MQTT_PORT in [8883, 8084]:
     # SSL/TLS setup for EMQX Cloud (Only for Port 8883)
     client.tls_set(cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
     client.tls_insecure_set(True)
