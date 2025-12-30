@@ -1,9 +1,3 @@
-import React from 'react';
-import AdminLayout from '../../components/atmo/AdminLayout';
-import MetricCard from '../../components/atmo/MetricCard';
-import DeviceList from '../../components/atmo/DeviceList';
-import AirQualityChart from '../../components/atmo/AirQualityChart';
-import { Wind, Users, Activity, Battery } from 'lucide-react';
 
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/atmo/AdminLayout';
