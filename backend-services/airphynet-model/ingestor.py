@@ -105,7 +105,8 @@ if MQTT_USERNAME and MQTT_PASSWORD:
 
 # SSL/TLS setup for EMQX Cloud
 # Use standard CA certificates
-client.tls_set(cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2)
+client.tls_set(cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
+client.tls_insecure_set(True)
 
 client.on_connect = on_connect
 client.on_message = on_message
