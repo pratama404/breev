@@ -22,7 +22,7 @@ CLOUD_PASS = "Breev123#"
 TOPIC_SOURCE = "aqi/sensor/#"
 
 # LOCAL BROKER (Destination)
-LOCAL_BROKER = "emqx" # Container name
+LOCAL_BROKER = os.getenv("MQTT_BROKER", "localhost") # Dynamic (localhost if host mode)
 LOCAL_PORT = 1883
 LOCAL_USER = os.getenv("MQTT_USERNAME", "")
 LOCAL_PASS = os.getenv("MQTT_PASSWORD", "")

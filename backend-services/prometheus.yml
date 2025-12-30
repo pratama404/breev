@@ -5,12 +5,12 @@ scrape_configs:
   - job_name: 'airphynet-inference'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['inference-service:8000']
+      - targets: ['host.docker.internal:8000']
 
   - job_name: 'airphynet-ingestor'
     metrics_path: '/'
     static_configs:
-      - targets: ['ingestion-service:8001']
+      - targets: ['host.docker.internal:8001']
 
   - job_name: 'mongodb'
     metrics_path: '/metrics'
