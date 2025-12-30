@@ -97,8 +97,14 @@ def on_message(client, userdata, msg):
     except Exception as e:
         logger.error(f"Error processing message: {e}")
 
+MQTT_TRANSPORT = os.getenv("MQTT_TRANSPORT", "tcp")
+
+# ...
+
 # MQTT Setup
-client = mqtt.Client()
+client = mqtt.Client(transport=MQTT_TRANSPORT)
+if MQTT_TRANSPORT == "websockets":
+    client.ws_set_options(path="/mqtt")
 
 if MQTT_USERNAME and MQTT_PASSWORD:
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
