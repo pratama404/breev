@@ -20,6 +20,8 @@ services:
     container_name: ingestion-service
     ports:
       - "8001:8001" # Prometheus Metrics
+    volumes:
+      - ./airphynet-model:/app
     # network_mode: host # Not needed for Local EMQX
     environment:
       - MONGODB_URI=${MONGODB_URI}
