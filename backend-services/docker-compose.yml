@@ -18,9 +18,9 @@ services:
   ingestion-service:
     image: pratama404/airphynet-service:latest
     container_name: ingestion-service
-    # ports:
-    #   - "8001:8001" # Prometheus Metrics (Now on host directly)
-    network_mode: host
+    ports:
+      - "8001:8001" # Prometheus Metrics
+    # network_mode: host # Not needed for Local EMQX
     environment:
       - MONGODB_URI=${MONGODB_URI}
       - MQTT_BROKER=${MQTT_BROKER}
@@ -76,3 +76,14 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+
+  emqx:
+    image: emqx/emqx:5.3.2
+    container_name: emqx
+    ports:
+      - "1883:1883"      # MQTT TCP
+      - "8083:8083"      # WebSocket
+      - "8084:8084"      # WSS
+      - "8883:8883"      # MQTTS
+      - "18083:18083"    # Dashboard
+    restart: always
