@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Start the Bridge (Cloud -> Local)
+python mqtt_bridge.py &
+
 # Start the Ingestor in background
 python ingestor.py &
 

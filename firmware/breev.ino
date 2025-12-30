@@ -21,15 +21,15 @@
 #define WIFI_PASSWORD "covidsars"
 
 // --- MQTT Settings (EMQX Cloud) ---
-// --- MQTT Settings (Local EMQX Proxmox) ---
-#define MQTT_SERVER "192.168.1.50" // <--- GANTI INI DENGAN IP PROXMOX SERVER ANDA!
-#define MQTT_PORT 1883
+// --- MQTT Settings (EMQX Cloud) ---
+#define MQTT_SERVER "f8d02a91.ala.asia-southeast1.emqxsl.com"
+#define MQTT_PORT 8883
 #define MQTT_TOPIC "aqi/sensor/device_001/telemetry"
 #define MQTT_CLIENT_ID "esp32_airphynet_client"
 
 // --- Auth Credentials ---
-#define MQTT_USERNAME "" // EMQX Lokal default allow anonymous
-#define MQTT_PASSWORD ""
+#define MQTT_USERNAME "breev"
+#define MQTT_PASSWORD "Breev123#"
 
 // --- Sensor Settings ---
 #define SENSOR_ID "device_001"
@@ -48,7 +48,7 @@
 // 2. GLOBAL OBJECTS & VARIABLES
 // ==========================================
 
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient client(espClient);
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -125,8 +125,9 @@ void initWiFi() {
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
 
-    // PENTING: Plain TCP tidak butuh sertifikat SSL
-    // espClient.setInsecure(); // Hapus untuk TCP biasa
+    // PENTING: Bypass sertifikat SSL (untuk testing EMQX Cloud)
+    // Agar tidak perlu upload file sertifikat CA root
+    espClient.setInsecure();
 }
 
 void reconnectMQTT() {
