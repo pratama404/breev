@@ -28,8 +28,10 @@ if not MONGODB_URI:
     raise ValueError("MONGODB_URI environment variable is not set")
 
 # Setup Logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger("paho").setLevel(logging.DEBUG) # Force Paho Debug
 logger = logging.getLogger(__name__)
+print("DEBUG: Logger initialized at DEBUG level")
 
 # Prometheus Metrics
 SENSOR_TEMP = Gauge('sensor_temperature_celsius', 'Temperature from sensor', ['sensor_id'])
@@ -111,9 +113,13 @@ if MQTT_USERNAME and MQTT_PASSWORD:
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
 
 if MQTT_PORT in [8883, 8084]:
-    # SSL/TLS setup for EMQX Cloud (Only for Port 8883)
-    client.tls_set(cert_reqs=ssl.CERT_NONE)
-    client.tls_insecure_set(True)
+    # EXPERIMENTAL: EXACT COPY OF test_wss.py CONTEXT
+    print("DEBUG: Applying custom SSL Context from test_wss.py")
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    client.tls_set_context(context)
+    # client.tls_insecure_set(True) # Not needed with context
 
 client.on_connect = on_connect
 client.on_message = on_message
