@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # CLOUD BROKER (Source)
 CLOUD_BROKER = "f8d02a91.ala.asia-southeast1.emqxsl.com"
-CLOUD_PORT = 8883
+CLOUD_PORT = 8084 # Changed to WSS
 CLOUD_USER = "breev"
 CLOUD_PASS = "Breev123#"
 TOPIC_SOURCE = "aqi/sensor/#"
@@ -30,7 +30,9 @@ LOCAL_PASS = os.getenv("MQTT_PASSWORD", "")
 # --- CLIENTS ---
 
 def create_cloud_client():
-    client = mqtt.Client(client_id="python_bridge_cloud_in")
+    # Use WebSockets to bypass Firewall
+    client = mqtt.Client(client_id="python_bridge_cloud_in", transport='websockets')
+    client.ws_set_options(path="/mqtt")
     client.username_pw_set(CLOUD_USER, CLOUD_PASS)
     
     # SSL Context (Loose validation like test_wss.py)
