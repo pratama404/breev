@@ -35,11 +35,9 @@ def create_cloud_client():
     client.ws_set_options(path="/mqtt")
     client.username_pw_set(CLOUD_USER, CLOUD_PASS)
     
-    # SSL Context (Loose validation like test_wss.py)
-    context = ssl.create_default_context()
-    context.check_hostname = False
-    context.verify_mode = ssl.CERT_NONE
-    client.tls_set_context(context)
+    # SSL Context - Standard Paho Setup (Fixes SNI/Timeout)
+    client.tls_set(cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
+    client.tls_insecure_set(True)
     
     def on_connect(c, userdata, flags, rc):
         if rc == 0:
