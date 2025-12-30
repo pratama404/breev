@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   inference-service:
-    build: ./airphynet-model
+    image: pratama404/airphynet-service:latest
     container_name: inference-service
     command: uvicorn inference_api:app --host 0.0.0.0 --port 8000
     ports:
@@ -13,9 +13,10 @@ services:
       - MLFLOW_TRACKING_USERNAME=${MLFLOW_TRACKING_USERNAME}
       - MLFLOW_TRACKING_PASSWORD=${MLFLOW_TRACKING_PASSWORD}
       - MLFLOW_MODEL_URI=models:/AirPhyNet/Production
+    restart: always
 
   ingestion-service:
-    build: ./airphynet-model
+    image: pratama404/airphynet-service:latest
     container_name: ingestion-service
     ports:
       - "8001:8001" # Prometheus Metrics
@@ -25,6 +26,7 @@ services:
       - MQTT_PORT=${MQTT_PORT}
       - MQTT_TOPIC=${MQTT_TOPIC}
       - MQTT_PASSWORD=${MQTT_PASSWORD}
+    restart: always
 
   node-red:
     build: ./node-red
