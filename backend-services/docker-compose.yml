@@ -18,14 +18,14 @@ services:
   ingestion-service:
     image: pratama404/airphynet-service:latest
     container_name: ingestion-service
-    ports:
-      - "8001:8001" # Prometheus Metrics
+    # ports:
+    #   - "8001:8001" # Prometheus Metrics (Exposed directly on Host)
     volumes:
       - ./airphynet-model:/app
-    # network_mode: host # Not needed for Local EMQX
+    network_mode: host # <--- JALAN TOL (Bypass Docker Network)
     environment:
       - MONGODB_URI=${MONGODB_URI}
-      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_BROKER=localhost # <--- Connect to Local EMQX via Host
       - MQTT_PORT=${MQTT_PORT}
       - MQTT_TOPIC=${MQTT_TOPIC}
       - MQTT_USERNAME=${MQTT_USERNAME}
@@ -89,3 +89,9 @@ services:
       - "8883:8883"      # MQTTS
       - "18083:18083"    # Dashboard
     restart: always
+
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1400
