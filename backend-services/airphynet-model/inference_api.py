@@ -61,6 +61,37 @@ async def root():
 async def health_check():
     return {"status": "healthy", "model_loaded": True}
 
+# --- PROMETHEUS METRICS ---
+from prometheus_client import Gauge
+SENSOR_TEMP = Gauge('sensor_temperature_celsius', 'Temperature from sensor', ['sensor_id'])
+SENSOR_HUM = Gauge('sensor_humidity_percent', 'Humidity from sensor', ['sensor_id'])
+SENSOR_CO2 = Gauge('sensor_co2_ppm', 'CO2 PPM from sensor', ['sensor_id'])
+SENSOR_AQI = Gauge('sensor_aqi', 'Calculated AQI from sensor', ['sensor_id'])
+
+# --- HTTP INGESTION ---
+@app.post("/ingest")
+async def ingest_sensor_data(data: SensorData):
+    try:
+        # Convert to dict
+        doc = data.dict()
+        doc['received_at'] = datetime.utcnow()
+        doc['aqi_calculated'] = data.aqi # Align naming with ingestor.py
+        
+        # Insert to Mongo
+        result = db.sensor_logs.insert_one(doc)
+        
+        # Update Prometheus
+        sid = data.sensor_id
+        SENSOR_TEMP.labels(sensor_id=sid).set(data.temperature)
+        SENSOR_HUM.labels(sensor_id=sid).set(data.humidity)
+        SENSOR_CO2.labels(sensor_id=sid).set(data.co2_ppm)
+        SENSOR_AQI.labels(sensor_id=sid).set(data.aqi)
+
+        return {"status": "success", "id": str(result.inserted_id)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/predict", response_model=PredictionResponse)
 async def predict_air_quality(request: PredictionRequest):
     try:
