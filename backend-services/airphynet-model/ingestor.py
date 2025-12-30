@@ -103,6 +103,7 @@ MQTT_TRANSPORT = os.getenv("MQTT_TRANSPORT", "tcp")
 
 # MQTT Setup
 client = mqtt.Client(transport=MQTT_TRANSPORT)
+client.enable_logger(logger) # ENABLE DEEP LOGGING
 if MQTT_TRANSPORT == "websockets":
     client.ws_set_options(path="/mqtt")
 
