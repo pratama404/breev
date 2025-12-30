@@ -24,8 +24,8 @@ TOPIC_SOURCE = "aqi/sensor/#"
 # LOCAL BROKER (Destination)
 LOCAL_BROKER = "emqx" # Container name
 LOCAL_PORT = 1883
-LOCAL_USER = ""
-LOCAL_PASS = ""
+LOCAL_USER = os.getenv("MQTT_USERNAME", "")
+LOCAL_PASS = os.getenv("MQTT_PASSWORD", "")
 
 # --- CLIENTS ---
 
@@ -62,7 +62,8 @@ def create_cloud_client():
 
 def create_local_client():
     client = mqtt.Client(client_id="python_bridge_local_out")
-    # No auth for local usually
+    if LOCAL_USER and LOCAL_PASS:
+        client.username_pw_set(LOCAL_USER, LOCAL_PASS)
     
     def on_connect(c, userdata, flags, rc):
         if rc == 0:
