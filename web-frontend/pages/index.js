@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../components/Layout';
 
-import Link from 'next/link';
-import Layout from '../components/Layout';
+
 import { FaWind, FaQrcode, FaShieldAlt } from 'react-icons/fa';
 
 export default function Home() {
