@@ -28,7 +28,7 @@ if not MONGODB_URI:
     raise ValueError("MONGODB_URI environment variable is not set")
 
 # Setup Logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Prometheus Metrics
@@ -112,7 +112,7 @@ if MQTT_USERNAME and MQTT_PASSWORD:
 
 if MQTT_PORT in [8883, 8084]:
     # SSL/TLS setup for EMQX Cloud (Only for Port 8883)
-    client.tls_set(cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
+    client.tls_set(cert_reqs=ssl.CERT_NONE)
     client.tls_insecure_set(True)
 
 client.on_connect = on_connect
