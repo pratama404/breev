@@ -18,8 +18,9 @@ services:
   ingestion-service:
     image: pratama404/airphynet-service:latest
     container_name: ingestion-service
-    ports:
-      - "8001:8001" # Prometheus Metrics
+    # ports:
+    #   - "8001:8001" # Prometheus Metrics (Now on host directly)
+    network_mode: host
     environment:
       - MONGODB_URI=${MONGODB_URI}
       - MQTT_BROKER=${MQTT_BROKER}
