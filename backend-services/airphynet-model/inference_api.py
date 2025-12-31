@@ -75,6 +75,7 @@ async def ingest_sensor_data(data: SensorData):
         # Convert to dict
         doc = data.dict()
         doc['received_at'] = datetime.utcnow()
+        doc['timestamp'] = doc['received_at'] # Frontend Compatibility (Required for Charts/Status)
         doc['aqi_calculated'] = data.aqi # Align naming with ingestor.py
         
         # Insert to Mongo

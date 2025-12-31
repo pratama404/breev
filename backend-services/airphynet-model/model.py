@@ -79,12 +79,21 @@ def create_model():
     return model
 
 def preprocess_data(data):
-    """Preprocess sensor data for model input"""
-    # Normalize data
+    """Preprocess sensor data for model input using Fixed Constants (Approximate Training Dist)"""
     data_array = np.array(data)
     
-    # Simple normalization (in production, use proper scaling)
-    normalized_data = (data_array - np.mean(data_array, axis=0)) / (np.std(data_array, axis=0) + 1e-8)
+    # Approx stats (Temp, Hum, CO2, AQI)
+    # Based on typical sensor ranges:
+    # Temp: 20-40 -> Mean 30, Std 10
+    # Hum: 40-80 -> Mean 60, Std 20
+    # CO2: 400-2000 -> Mean 1000, Std 500
+    # AQI: 0-300 -> Mean 100, Std 50
+    means = np.array([30.0, 60.0, 1000.0, 100.0])
+    stds = np.array([10.0, 20.0, 500.0, 50.0])
+    
+    # Broadcast subtraction/division
+    # data_array shape is (Seq_Len, 4)
+    normalized_data = (data_array - means) / (stds + 1e-8)
     
     return torch.FloatTensor(normalized_data).unsqueeze(0)
 
