@@ -43,6 +43,8 @@ class SensorData(BaseModel):
     humidity: float
     co2_ppm: float
     aqi: int
+    rssi: int = 0
+    uptime_seconds: int = 0
 
 class PredictionRequest(BaseModel):
     sensor_id: str
@@ -67,6 +69,8 @@ SENSOR_TEMP = Gauge('sensor_temperature_celsius', 'Temperature from sensor', ['s
 SENSOR_HUM = Gauge('sensor_humidity_percent', 'Humidity from sensor', ['sensor_id'])
 SENSOR_CO2 = Gauge('sensor_co2_ppm', 'CO2 PPM from sensor', ['sensor_id'])
 SENSOR_AQI = Gauge('sensor_aqi', 'Calculated AQI from sensor', ['sensor_id'])
+SENSOR_RSSI = Gauge('sensor_rssi_dbm', 'WiFi Signal Strength (dBm)', ['sensor_id'])
+SENSOR_UPTIME = Gauge('sensor_uptime_seconds', 'Device Uptime in seconds', ['sensor_id'])
 
 # --- HTTP INGESTION ---
 @app.post("/ingest")
@@ -87,6 +91,10 @@ async def ingest_sensor_data(data: SensorData):
         SENSOR_HUM.labels(sensor_id=sid).set(data.humidity)
         SENSOR_CO2.labels(sensor_id=sid).set(data.co2_ppm)
         SENSOR_AQI.labels(sensor_id=sid).set(data.aqi)
+        if data.rssi != 0:
+            SENSOR_RSSI.labels(sensor_id=sid).set(data.rssi)
+        if data.uptime_seconds != 0:
+            SENSOR_UPTIME.labels(sensor_id=sid).set(data.uptime_seconds)
 
         return {"status": "success", "id": str(result.inserted_id)}
     except Exception as e:

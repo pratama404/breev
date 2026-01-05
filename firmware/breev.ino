@@ -114,7 +114,9 @@ void sendSensorDataHTTP(float temperature, float humidity, float co2_ppm, int aq
             doc["temperature"] = temperature;
             doc["humidity"] = humidity;
             doc["co2_ppm"] = co2_ppm;
-            doc["aqi"] = aqi; // API kita pakai "aqi", bukan "aqi_calculated"
+            doc["aqi"] = aqi; 
+            doc["rssi"] = WiFi.RSSI();  // Add WiFi Signal Strength
+            doc["uptime_seconds"] = millis() / 1000; // Add Device Uptime
 
             String payload;
             serializeJson(doc, payload);
