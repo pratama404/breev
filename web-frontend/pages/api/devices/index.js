@@ -16,7 +16,7 @@ export default async function handler(req, res) {
             pipeline: [
               { $sort: { timestamp: -1 } },
               { $limit: 1 },
-              { $project: { timestamp: 1, battery: 1 } } // Assuming battery is in logs, or remove if not
+              { $project: { timestamp: 1, battery: 1, aqi_calculated: 1 } }
             ],
             as: "last_log"
           }
@@ -24,7 +24,8 @@ export default async function handler(req, res) {
         {
           $addFields: {
             last_seen: { $arrayElemAt: ["$last_log.timestamp", 0] },
-            battery_level: { $ifNull: [{ $arrayElemAt: ["$last_log.battery", 0] }, 100] }
+            battery_level: { $ifNull: [{ $arrayElemAt: ["$last_log.battery", 0] }, 100] },
+            latest_aqi: { $ifNull: [{ $arrayElemAt: ["$last_log.aqi_calculated", 0] }, 0] }
           }
         },
         { $project: { last_log: 0 } }

@@ -4,6 +4,7 @@ import AdminLayout from '../../components/atmo/AdminLayout';
 import MetricCard from '../../components/atmo/MetricCard';
 import DeviceList from '../../components/atmo/DeviceList';
 import AirQualityChart from '../../components/atmo/AirQualityChart';
+import Skeleton from '../../components/atmo/Skeleton';
 import { Wind, Users, Activity, Battery, AlertTriangle } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -18,26 +19,16 @@ export default function DashboardPage() {
         const data = await res.json();
 
         // Enrich with status logic if API doesn't provide it fully
-        // Assuming API returns { sensor_id, name, location, last_seen, battery_level, ... }
-        // We'll map it to our UI model
         const now = new Date();
         const enriched = data.map(d => {
           const lastSeen = d.last_seen ? new Date(d.last_seen) : null;
           const isOnline = lastSeen && (now - lastSeen) < 5 * 60 * 1000; // 5 min threshold
 
-          // Mock AQI for list view if not present in /api/devices (usually fetching detail is heavy)
-          // ideally /api/devices should return latest sensor value. 
-          // If not, we might show 'N/A' or fetch individually. 
-          // For now, let's assume API *could* have it or we default to a safe value/random for the strict "Real Integration" step
-          // actually, let's keep the mock AQI if missing, effectively "Simulating" the sensor value until we update the aggregated query.
-          // BUT, my previous edit to /api/devices ONLY added last_seen. Cleanest is to use a placeholder or update API. 
-          // Let's use placeholder 0 or previous logic.
-
           return {
             id: d.sensor_id,
             name: d.name || d.sensor_id,
             location: d.location || 'Unknown',
-            aqi: d.current_aqi || 0, // We need to ensure API provides this or we fetch it.
+            aqi: d.current_aqi || 0,
             status: isOnline ? 'online' : 'offline',
             battery: d.battery_level || 100
           };
@@ -62,16 +53,24 @@ export default function DashboardPage() {
   const offlineDevices = totalDevices - onlineDevices;
   const avgAqi = totalDevices > 0 ? Math.round(devices.reduce((acc, curr) => acc + (curr.aqi || 0), 0) / totalDevices) : 0;
 
-  // -- MOCK CHART DATA (Keep until /api/history is ready) --
-  const mockChartData = [
-    { time: '08:00', co2: 420, aqi: 25 },
-    { time: '10:00', co2: 550, aqi: 40 },
-    { time: '12:00', co2: 800, aqi: 65 },
-    { time: '14:00', co2: 950, aqi: 80 },
-    { time: '16:00', co2: 700, aqi: 55 },
-    { time: '18:00', co2: 500, aqi: 35 },
-    { time: '20:00', co2: 450, aqi: 30 },
-  ];
+  const [chartData, setChartData] = useState([]);
+
+  // Fetch Chart Data
+  useEffect(() => {
+    async function fetchChartData() {
+      try {
+        const res = await fetch('/api/analytics');
+        if (res.ok) {
+          const json = await res.json();
+          // API returns 'aqi_trend' with 'aqi' and 'co2' keys which match our chart expectations
+          setChartData(json.aqi_trend || []);
+        }
+      } catch (e) {
+        console.error("Failed to fetch chart data", e);
+      }
+    }
+    fetchChartData();
+  }, []);
 
   return (
     <AdminLayout title="Dashboard - ATMO Admin">
@@ -117,12 +116,23 @@ export default function DashboardPage() {
 
         {/* 2. Main Chart Section */}
         <div className="lg:col-span-2">
-          <AirQualityChart data={mockChartData} />
+          <AirQualityChart data={chartData} />
 
           {/* Recent Activity / Device List */}
           <div className="mt-8">
             {loading ? (
-              <div className="p-8 text-center text-gray-400">Loading devices...</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-8 w-1/3" />
+                    <div className="flex gap-2 pt-4">
+                      <Skeleton className="h-4 w-1/4" />
+                      <Skeleton className="h-4 w-1/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <DeviceList devices={devices} />
             )}
@@ -134,7 +144,7 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg">
             <h3 className="font-bold text-lg mb-2">Weekly Insight</h3>
             <p className="text-indigo-100 text-sm mb-4">
-              CO2 levels in "{devices[0]?.name || 'Meeting Room'}" have improved by 12% since yesterday.
+              CO2 levels in &quot;{devices[0]?.name || 'Meeting Room'}&quot; have improved by 12% since yesterday.
             </p>
             <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
               View Report

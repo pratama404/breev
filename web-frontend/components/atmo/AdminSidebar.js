@@ -48,7 +48,13 @@ export default function AdminSidebar({ isOpen, onClose }) {
                 {/* Navigation Links */}
                 <nav className="p-4 space-y-1">
                     {navItems.map((item) => {
-                        const isActive = router.pathname.startsWith(item.path);
+                        // Precise active state logic:
+                        // Dashboard should be active only on exact match or root admin
+                        // Others (Devices, Analytics, Settings) should be active on sub-paths
+                        const isActive = item.path === '/admin/dashboard'
+                            ? router.pathname === '/admin/dashboard' || router.pathname === '/admin'
+                            : router.pathname.startsWith(item.path);
+
                         return (
                             <Link
                                 key={item.path}

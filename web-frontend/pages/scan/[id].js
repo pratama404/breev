@@ -169,7 +169,7 @@ export default function ScanPage() {
             <div className="bg-gray-900 text-white p-6 rounded-3xl shadow-lg">
               <h3 className="font-bold text-lg mb-2">About ATMO</h3>
               <p className="text-sm text-gray-400 leading-relaxed">
-                We monitor indoor environmental quality to ensure your health and productivity. Scan any room's QR code to see real-time data.
+                We monitor indoor environmental quality to ensure your health and productivity. Scan any room&apos;s QR code to see real-time data.
               </p>
               <button className="mt-4 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-sm transition">
                 Learn More
