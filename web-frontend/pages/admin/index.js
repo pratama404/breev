@@ -84,11 +84,10 @@ export default function AdminDashboard() {
               {devices.map((device) => (
                 <div
                   key={device.sensor_id}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedDevice?.sensor_id === device.sensor_id
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedDevice?.sensor_id === device.sensor_id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                    }`}
                   onClick={() => setSelectedDevice(device)}
                 >
                   <div className="flex justify-between items-start">
@@ -98,11 +97,10 @@ export default function AdminDashboard() {
                       <p className="text-xs text-gray-500">ID: {device.sensor_id}</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        device.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`px-2 py-1 rounded-full text-xs ${device.status === 'active'
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
-                      }`}>
+                        }`}>
                         {device.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
                       </span>
                       <button
@@ -153,7 +151,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={newDevice.sensor_id}
-                    onChange={(e) => setNewDevice({...newDevice, sensor_id: e.target.value})}
+                    onChange={(e) => setNewDevice({ ...newDevice, sensor_id: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -165,7 +163,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={newDevice.name}
-                    onChange={(e) => setNewDevice({...newDevice, name: e.target.value})}
+                    onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -177,7 +175,7 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={newDevice.location}
-                    onChange={(e) => setNewDevice({...newDevice, location: e.target.value})}
+                    onChange={(e) => setNewDevice({ ...newDevice, location: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -209,7 +207,7 @@ export default function AdminDashboard() {
             Akses dashboard Grafana untuk analisis mendalam dan visualisasi data historis.
           </p>
           <a
-            href="http://localhost:3000"
+            href={process.env.NEXT_PUBLIC_GRAFANA_URL || "#"}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors"

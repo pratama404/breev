@@ -81,31 +81,31 @@ Jika IP VM Proxmox Anda misalnya `192.168.1.50`, maka akses:
 - **Grafana (Monitoring)**: `http://192.168.1.50:3000` (Login: `admin` / `admin`)
 - **Prometheus**: `http://192.168.1.50:9090`
 
-## 5. (Opsional) Setup Frontend
+## 5. Deployment Hybrid (Backend Proxmox + Frontend Vercel)
 
-Jika Anda ingin menjalankan Frontend Next.js juga di VM ini:
+Skema ini memisahkan Frontend (di Cloud Vercel) dan Backend (di Home Server Proxmox), dihubungkan oleh MongoDB Atlas.
 
-1.  **Install Node.js (v18+)**:
+### A. Konfigurasi Backend (Proxmox)
+1. Pastikan `docker-compose.yml` berjalan.
+2. Pastikan `.env` menggunakan `MONGODB_URI` ke **MongoDB Atlas**.
+   `mongodb+srv://user:pass@cluster.mongodb.net/aqi_monitoring`
+3. (Opsional) Jalankan **Cloudflare Tunnel** agar Grafana bisa diakses publik.
     ```bash
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt install -y nodejs
+    cloudflared tunnel --url http://localhost:3000
     ```
+    *Simpan URL yang diberikan (misal: `https://monitor-air.trycloudflare.com`).*
 
-2.  **Setup Frontend**:
-    ```bash
-    cd ../web-frontend
-    cp .env.local.example .env.local
-    nano .env.local
-    # Ubah AIRPHYNET_API_URL ke http://localhost:8000
-    ```
+### B. Konfigurasi Frontend (Vercel)
+Saat deploy project `web-frontend` ke Vercel, masuk ke **Settings > Environment Variables** dan tambahkan:
 
-3.  **Build & Run**:
-    ```bash
-    npm install
-    npm run build
-    npm start
-    ```
-    Akses di `http://192.168.1.50:3000` (Pastikan port tidak bentrok dengan Grafana yg juga 3000. Jika bentrok, ubah port Grafana di docker-compose.yml ke 3001).
+1. `MONGODB_URI`: Sama persis dengan data di Backend (ke Atlas).
+2. `NEXT_PUBLIC_GRAFANA_URL`: Masukkan URL Cloudflare Tunnel dari langkah A (misal: `https://monitor-air.trycloudflare.com`).
+3. `NEXTAUTH_URL`: URL domain Vercel Anda (misal `https://breev-admin.vercel.app`).
+4. `NEXTAUTH_SECRET`: Generate random string (bisa pakai command `openssl rand -base64 32`).
+
+### C. Alur Data
+*   **Sensor** -> MQTT -> **Backend (Proxmox)** -> **MongoDB Atlas**
+*   **User** -> **Frontend (Vercel)** -> **MongoDB Atlas**
 
 ---
 **Catatan Penting Security**:
