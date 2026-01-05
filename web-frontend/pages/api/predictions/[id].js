@@ -18,7 +18,8 @@ export default async function handler(req, res) {
       if (!latestPrediction) {
         // Try to generate new predictions by calling AirPhyNet service
         try {
-          const airphynetUrl = process.env.AIRPHYNET_API_URL || 'http://localhost:8000';
+          const airphynetUrl = process.env.AIRPHYNET_API_URL;
+          if (!airphynetUrl) throw new Error("AIRPHYNET_API_URL is not set");
           const response = await fetch(`${airphynetUrl}/predict`, {
             method: 'POST',
             headers: {
@@ -45,7 +46,8 @@ export default async function handler(req, res) {
     } else if (req.method === 'POST') {
       // Trigger new prediction
       try {
-        const airphynetUrl = process.env.AIRPHYNET_API_URL || 'http://localhost:8000';
+        const airphynetUrl = process.env.AIRPHYNET_API_URL;
+        if (!airphynetUrl) throw new Error("AIRPHYNET_API_URL is not set");
         const response = await fetch(`${airphynetUrl}/predict`, {
           method: 'POST',
           headers: {

@@ -7,6 +7,7 @@
 
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include <DHT.h>
 #include <math.h>
@@ -22,7 +23,7 @@
 // --- API Settings ---
 // GANTI DENGAN URL TUNNEL ANDA! (Contoh: https://airphynet.trycloudflare.com/ingest)
 // Pastikan akhiran /ingest ada.
-const char* apiEndpoint = "https://GANTI_DENGAN_DOMAIN_TUNNEL_ANDA/ingest"; 
+const char* apiEndpoint = "https://railroad-export-mice-lucas.trycloudflare.com/ingest"; 
 
 // --- Sensor Settings ---
 #define SENSOR_ID "device_001"

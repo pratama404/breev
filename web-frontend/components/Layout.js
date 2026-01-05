@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaWind, FaChartLine, FaQrcode, FaCog } from 'react-icons/fa';
 
-export default function Layout({ children, title = 'AirPhyNet' }) {
+export default function Layout({ children, title = 'Breev' }) {
     const router = useRouter();
 
     const navItems = [
@@ -29,7 +29,7 @@ export default function Layout({ children, title = 'AirPhyNet' }) {
                             <FaWind size={20} />
                         </div>
                         <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-                            AirPhyNet
+                            Breev
                         </span>
                     </Link>
 
@@ -39,8 +39,8 @@ export default function Layout({ children, title = 'AirPhyNet' }) {
                                 key={item.path}
                                 href={item.path}
                                 className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all ${router.pathname === item.path
-                                        ? 'bg-blue-100 text-blue-700 font-medium'
-                                        : 'text-gray-600 hover:bg-gray-100'
+                                    ? 'bg-blue-100 text-blue-700 font-medium'
+                                    : 'text-gray-600 hover:bg-gray-100'
                                     }`}
                             >
                                 {item.icon}
@@ -81,8 +81,8 @@ export default function Layout({ children, title = 'AirPhyNet' }) {
                             key={item.path}
                             href={item.path}
                             className={`flex flex-col items-center p-2 transition-colors ${router.pathname === item.path
-                                    ? 'text-blue-600'
-                                    : 'text-gray-500 hover:text-gray-900'
+                                ? 'text-blue-600'
+                                : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
                             <div className="text-xl mb-1">{item.icon}</div>

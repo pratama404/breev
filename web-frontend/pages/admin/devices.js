@@ -55,11 +55,21 @@ export default function DevicesPage() {
         return matchesSearch && matchesFilter;
     });
 
-    // Mock Handlers
-    const handleDelete = (id) => {
-        if (confirm(`Are you sure you want to delete ${id}?`)) {
-            setDevices(prev => prev.filter(d => d.device_id !== id));
-            addToast(`Device ${id} deleted`, 'error');
+    // Real Handlers
+    const handleDelete = async (id) => {
+        if (confirm(`Are you sure you want to delete device ${id}?`)) {
+            try {
+                const res = await fetch(`/api/devices?sensor_id=${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    setDevices(prev => prev.filter(d => d.device_id !== id));
+                    addToast(`Device ${id} deleted successfully`, 'success');
+                } else {
+                    addToast('Failed to delete device', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                addToast('Error deleting device', 'error');
+            }
         }
     };
 

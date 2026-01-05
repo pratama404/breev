@@ -3,8 +3,8 @@ import { Menu, Bell, ChevronDown, MapPin } from 'lucide-react';
 
 export default function AdminHeader({ onMenuClick }) {
 
-    // Mock Location State
-    const [location, setLocation] = useState('San Francisco HQ');
+    // Location State
+    const [location, setLocation] = useState('Main Office');
 
     return (
         <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">

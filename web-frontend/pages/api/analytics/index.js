@@ -58,6 +58,27 @@ export default async function handler(req, res) {
 
         // Ensure strictly sorted and fill gaps if we wanted perfection, but this is fine for MVP
 
+        // --- NEW: Insight Calculation (Compare Last 24h vs Previous 24h) ---
+        const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+        const prevStats = await db.collection('sensor_logs').aggregate([
+            { $match: { timestamp: { $gte: twoDaysAgo, $lt: dayAgo } } },
+            { $group: { _id: null, avg_aqi: { $avg: "$aqi_calculated" } } }
+        ]).toArray();
+
+        const prevAvg = prevStats[0]?.avg_aqi || 0;
+        const currAvg = stats.avg_aqi || 0;
+        let diffPercent = 0;
+        if (prevAvg > 0) {
+            diffPercent = ((currAvg - prevAvg) / prevAvg) * 100;
+        }
+
+        const insight = {
+            message: diffPercent === 0
+                ? "Air quality is stable compared to yesterday."
+                : `Average AQI has ${diffPercent < 0 ? 'improved' : 'worsened'} by ${Math.abs(Math.round(diffPercent))}% since yesterday.`,
+            trend: diffPercent <= 0 ? 'good' : 'bad'
+        };
+
         // 3. Sensor Data (Latest detailed logs for charts, e.g. last 12 points)
         // For simplicity, let's just dump the last 20 logs overall (or filtered by device if query param exists)
         // If query sensor_id is present, filter by it
@@ -86,7 +107,8 @@ export default async function handler(req, res) {
                 active_devices: activeSensors.length
             },
             aqi_trend: trends,
-            sensor_data: sensorData
+            sensor_data: sensorData,
+            insight: insight
         });
 
     } catch (error) {

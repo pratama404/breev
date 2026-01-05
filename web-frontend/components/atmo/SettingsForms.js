@@ -158,6 +158,12 @@ export function NotificationSettings({ settings, onToggle }) {
 }
 
 export function ApiKeyGenerator() {
+    const [key, setKey] = useState('sk_live_' + Math.random().toString(36).substr(2, 16));
+
+    const regenerate = () => {
+        setKey('sk_live_' + Math.random().toString(36).substr(2, 16));
+    };
+
     return (
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-2xl text-white shadow-lg">
             <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
@@ -167,13 +173,13 @@ export function ApiKeyGenerator() {
 
             <div className="flex gap-2 mb-4">
                 <code className="flex-1 bg-black/30 p-3 rounded-lg font-mono text-sm text-indigo-300 break-all border border-white/10">
-                    sk_live_51Mz...q3k9
+                    {key}
                 </code>
                 <button className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
                     Copy
                 </button>
             </div>
-            <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition">
+            <button onClick={regenerate} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition">
                 Regenerate Key
             </button>
         </div>

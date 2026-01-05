@@ -20,24 +20,71 @@ export default function SettingsPage() {
             channel: ["dashboard", "email"]
         }
     });
+    const [loading, setLoading] = useState(true);
 
-    const handleSaveThreshold = (newValues) => {
-        setSettings({ ...settings, aqi_threshold: newValues });
-        // In real app, make API call here
-        addToast('Threshold settings saved successfully', 'success');
+    // Fetch Settings
+    React.useEffect(() => {
+        async function fetchSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    setSettings(data);
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchSettings();
+    }, []);
+
+    const saveSettings = async (newSettings) => {
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newSettings)
+            });
+            if (res.ok) {
+                return true;
+            }
+            throw new Error('Failed to save');
+        } catch (e) {
+            console.error(e);
+            addToast('Failed to save settings', 'error');
+            return false;
+        }
     };
 
-    const handleSaveMQTT = (newValues) => {
-        setSettings({ ...settings, mqtt: newValues });
-        addToast('MQTT configuration updated', 'success');
+    const handleSaveThreshold = async (newValues) => {
+        const newSettings = { ...settings, aqi_threshold: newValues };
+        setSettings(newSettings);
+        if (await saveSettings(newSettings)) {
+            addToast('Threshold settings saved successfully', 'success');
+        }
     };
 
-    const handleToggleNotify = (enabled) => {
-        setSettings({
+    const handleSaveMQTT = async (newValues) => {
+        const newSettings = { ...settings, mqtt: newValues };
+        setSettings(newSettings);
+        if (await saveSettings(newSettings)) {
+            addToast('MQTT configuration updated', 'success');
+        }
+    };
+
+    const handleToggleNotify = async (enabled) => {
+        const newSettings = {
             ...settings,
             notification: { ...settings.notification, enabled }
-        });
-        addToast(enabled ? 'Notifications enabled' : 'Notifications disabled', 'info');
+        };
+        setSettings(newSettings);
+
+        // Auto-save toggle
+        if (await saveSettings(newSettings)) {
+            addToast(enabled ? 'Notifications enabled' : 'Notifications disabled', 'info');
+        }
     };
 
     return (

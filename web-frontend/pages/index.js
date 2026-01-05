@@ -7,7 +7,7 @@ import { FaWind, FaQrcode, FaShieldAlt } from 'react-icons/fa';
 
 export default function Home() {
   return (
-    <Layout title="AirPhyNet - Welcome">
+    <Layout title="Breev - Welcome">
       <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
 
         {/* Hero Section */}
@@ -15,8 +15,8 @@ export default function Home() {
           <div className="inline-block p-4 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
             <FaWind size={48} />
           </div>
-          <h1 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-            AirPhy<span className="text-blue-600">Net</span>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+            Breathe Smarter with <span className="text-indigo-600">Breev</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
             Sistem Monitoring Kualitas Udara Cerdas Berbasis IoT & AI.
@@ -32,7 +32,7 @@ export default function Home() {
               <div className="flex items-center justify-center w-16 h-16 bg-green-100 text-green-600 rounded-2xl mb-6 mx-auto group-hover:scale-110 transition-transform">
                 <FaQrcode size={32} />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-3">Scan QR Code</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-3">Breev QR Code</h2>
               <p className="text-gray-500">
                 Akses cepat data kualitas udara di ruangan Anda. Cukup scan kode QR yang tersedia.
               </p>

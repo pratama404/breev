@@ -6,6 +6,8 @@ import DeviceList from '../../components/atmo/DeviceList';
 import AirQualityChart from '../../components/atmo/AirQualityChart';
 import Skeleton from '../../components/atmo/Skeleton';
 import { Wind, Users, Activity, Battery, AlertTriangle } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function DashboardPage() {
   const [devices, setDevices] = useState([]);
@@ -54,6 +56,7 @@ export default function DashboardPage() {
   const avgAqi = totalDevices > 0 ? Math.round(devices.reduce((acc, curr) => acc + (curr.aqi || 0), 0) / totalDevices) : 0;
 
   const [chartData, setChartData] = useState([]);
+  const [insight, setInsight] = useState(null);
 
   // Fetch Chart Data
   useEffect(() => {
@@ -64,6 +67,7 @@ export default function DashboardPage() {
           const json = await res.json();
           // API returns 'aqi_trend' with 'aqi' and 'co2' keys which match our chart expectations
           setChartData(json.aqi_trend || []);
+          if (json.insight) setInsight(json.insight);
         }
       } catch (e) {
         console.error("Failed to fetch chart data", e);
@@ -72,8 +76,57 @@ export default function DashboardPage() {
     fetchChartData();
   }, []);
 
+  // PDF Report Generation
+  const generateReport = () => {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(20);
+    doc.text("Breev - Air Quality Report", 14, 22);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+
+    // Summary Metrics
+    doc.setTextColor(0);
+    doc.text("Executive Summary:", 14, 45);
+    const summaryData = [
+      ["Total Devices", "Online", "Average AQI", "Issues"],
+      [totalDevices, onlineDevices, avgAqi, offlineDevices]
+    ];
+    autoTable(doc, {
+      head: [summaryData[0]],
+      body: [summaryData[1]],
+      startY: 50,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229] }
+    });
+
+    // Insight
+    if (insight) {
+      doc.text("Daily Insight:", 14, doc.lastAutoTable.finalY + 15);
+      doc.setFont("helvetica", "italic");
+      doc.text(insight.message, 14, doc.lastAutoTable.finalY + 22);
+      doc.setFont("helvetica", "normal");
+    }
+
+    // Devices Table
+    doc.text("Device Status:", 14, doc.lastAutoTable.finalY + 35);
+    const deviceRows = devices.map(d => [d.name, d.location, d.aqi, d.status, d.battery + '%']);
+
+    autoTable(doc, {
+      head: [["Name", "Location", "Current AQI", "Status", "Battery"]],
+      body: deviceRows,
+      startY: doc.lastAutoTable.finalY + 40,
+      theme: 'striped'
+    });
+
+    doc.save(`Breev_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   return (
-    <AdminLayout title="Dashboard - ATMO Admin">
+    <AdminLayout title="Dashboard - Breev Admin">
 
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h1>
@@ -142,12 +195,15 @@ export default function DashboardPage() {
         {/* 3. Small Sidebar Widgets */}
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg">
-            <h3 className="font-bold text-lg mb-2">Weekly Insight</h3>
+            <h3 className="font-bold text-lg mb-2">Daily Insight</h3>
             <p className="text-indigo-100 text-sm mb-4">
-              CO2 levels in &quot;{devices[0]?.name || 'Meeting Room'}&quot; have improved by 12% since yesterday.
+              {insight ? insight.message : "Collecting data for advanced insights..."}
             </p>
-            <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition">
-              View Report
+            <button
+              onClick={generateReport}
+              className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-semibold transition flex justify-center items-center gap-2"
+            >
+              <span>Download PDF Report</span>
             </button>
           </div>
 

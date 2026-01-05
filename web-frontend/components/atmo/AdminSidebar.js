@@ -33,11 +33,9 @@ export default function AdminSidebar({ isOpen, onClose }) {
 
                 {/* Logo Area */}
                 <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
-                    <div className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white">
-                            A
-                        </div>
-                        <span className="text-xl font-bold tracking-tight">ATMO</span>
+                    <div className="p-6 border-b border-gray-800">
+                        <h1 className="text-xl font-bold tracking-wider">BREEV</h1>
+                        <p className="text-xs text-gray-400 mt-1">Air Quality Monitor</p>
                     </div>
                     {/* Mobile Close Button */}
                     <button onClick={onClose} className="lg:hidden text-slate-400 hover:text-white">

@@ -19,6 +19,19 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'No data found for this sensor' });
       }
 
+      // Fetch Device Metadata (Name, Location)
+      const deviceMeta = await db.collection('devices').findOne({ sensor_id: id });
+
+      // Merge metadata into current data for frontend convenience
+      if (deviceMeta) {
+        currentData.name = deviceMeta.name;
+        currentData.location = deviceMeta.location;
+      }
+
+      if (!currentData) {
+        return res.status(404).json({ error: 'No data found for this sensor' });
+      }
+
       // Get historical data (last 24 hours)
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const historicalData = await db.collection('sensor_logs')

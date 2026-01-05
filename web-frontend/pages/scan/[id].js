@@ -82,7 +82,7 @@ export default function ScanPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans selection:bg-indigo-100">
       <Head>
-        <title>{roomData.name} - ATMO Monitor</title>
+        <title>{roomData.name} - Breev Monitor</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
       </Head>
 
@@ -167,7 +167,7 @@ export default function ScanPage() {
 
             {/* About Card */}
             <div className="bg-gray-900 text-white p-6 rounded-3xl shadow-lg">
-              <h3 className="font-bold text-lg mb-2">About ATMO</h3>
+              <h3 className="font-bold text-lg mb-2">About Breev</h3>
               <p className="text-sm text-gray-400 leading-relaxed">
                 We monitor indoor environmental quality to ensure your health and productivity. Scan any room&apos;s QR code to see real-time data.
               </p>
