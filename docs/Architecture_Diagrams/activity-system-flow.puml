@@ -1,0 +1,36 @@
+@startuml Activity - System Flow
+title End-to-End System Flow (Breev)
+
+|ESP32 Device|
+start
+:Wake Up;
+:Read Sensors (DHT + MQ);
+:Measure WiFi Signal;
+:Construct JSON Payload;
+:POST /ingest to Tunnel;
+
+|Backend Server|
+:Receive Request;
+if (API Key Valid?) then (no)
+    :Return 401;
+    stop
+else (yes)
+    :Calculate AQI;
+    :Store to MongoDB;
+    fork
+        :Check Thresholds;
+        if (AQI > Limit?) then (yes)
+            :Trigger Notification;
+        endif
+    fork again
+        :Update Real-time Cache;
+    end fork
+    :Return 200 OK;
+endif
+
+|Web Dashboard|
+:Poll /api/analytics;
+:Update Charts;
+stop
+
+@enduml

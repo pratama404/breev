@@ -1,43 +1,37 @@
-@startuml Activity - QR Code Scanning Process
-!theme plain
+@startuml Activity - QR Scan UX
+title Activity Diagram - Public User QR Scan (Breev)
 
-title QR Code Scanning (BCE Flow)
-
-|Actor| User
-|Boundary| UI (RoomPage)
-|Control| RoomController
-|Entity| SensorData / DB
-
-|User|
+|Public User|
 start
-:Scan QR Code;
+:Enters Room;
+:Notices "Breev" QR Code;
+:Scans QR with Mobile Camera;
 
-|UI (RoomPage)|
-:Request Page Load;
+|Frontend (Next.js)|
+:Resolve URL /scan/[id];
+:Fetch Real-time Data (/api/sensors);
+:Fetch Forecast (/api/predictions);
 
-|RoomController|
-:Receive Request;
-:Call Fetch Data Service;
+|Backend API|
+:Query MongoDB (Latest Log);
+:Query MongoDB (Forecast Cache);
+:Return JSON;
 
-|SensorData / DB|
-:Query Latest Readings;
-:Query Historical Data;
-:Query Predictions;
-
-|RoomController|
-if (Data Valid?) then (yes)
-  :Prepare Dashboard Props;
-  :Generate Charts;
-else (no)
-  :Prepare Error Page;
+|Frontend (Next.js)|
+:Calculate AQI Color (Green/Yellow/Red);
+if (AQI > 150?) then (Unhealthy)
+    :Render RED Background;
+    :Show "Mask Required" Warning;
+else (Good)
+    :Render GREEN Background;
+    :Show "Safe" Status;
 endif
 
-|UI (RoomPage)|
-:Render Dashboard Page;
-:Display AQI Gauge & Graphs;
+:Render Forecast Chart (Next 6h);
+:Display Educational Info;
 
-|User|
-:View Room Status;
+|Public User|
+:Read Current Status;
+:Decide to Stay/Enter;
 stop
-
 @enduml

@@ -1,103 +1,39 @@
-@startuml Deployment Diagram
-!theme plain
+@startuml Deployment Diagram - Breev Hybrid
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Deployment.puml
 
-title Deployment Architecture
+title Deployment Diagram - Breev Hybrid Architecture
 
-node "Building Infrastructure" {
-    node "Room 1" {
-        artifact "ESP32_A101" as esp1
-        artifact "MQ135 Sensor" as mq1
-        artifact "DHT22 Sensor" as dht1
-        artifact "QR Code Label" as qr1
-    }
-    
-    node "Room 2" {
-        artifact "ESP32_A102" as esp2
-        artifact "MQ135 Sensor" as mq2
-        artifact "DHT22 Sensor" as dht2
-        artifact "QR Code Label" as qr2
-    }
-    
-    node "WiFi Access Point" as wifi {
-        artifact "802.11 b/g/n" as wireless
+Deployment_Node(user_device, "User Device", "Mobile/Desktop Browser") {
+    Container(browser, "Web Client", "Chrome/Safari")
+}
+
+Deployment_Node(iot_device, "Monitoring Location", "ESP32 Device") {
+    Container(firmware, "Breev Firmware", "C++", "Reads sensors and sends HTTPS")
+}
+
+Deployment_Node(cloud_vercel, "Vercel Cloud", "Serverless Infrastructure") {
+    Container(frontend, "Next.js Application", "React/SSR", "Admin Dashboard & Public Views")
+}
+
+Deployment_Node(cloud_mongo, "MongoDB Atlas", "Database-as-a-Service") {
+    ContainerDb(db, "Breev Database", "MongoDB", "Sensor Logs & Users")
+}
+
+Deployment_Node(premise, "On-Premise Server", "Proxmox VM / Ubuntu") {
+    Deployment_Node(docker, "Docker Host") {
+        Container(tunnel, "Cloudflare Tunnel", "cloudflared", "Secure Ingress")
+        Container(backend, "FastAPI Backend", "Python:3.9", "Business Logic & AI")
+        Container(mqtt, "EMQX Broker", "Erlang", "MQTT Bridge (Optional)")
     }
 }
 
-cloud "Internet" {
-    node "Vercel Platform" {
-        artifact "Next.js App" as nextjs
-        artifact "API Routes" as api
-        artifact "Static Assets" as assets
-    }
-}
+' Connections
+Rel(browser, frontend, "HTTPS", "Visit Dashboard")
+Rel(frontend, tunnel, "API Calls", "HTTPS/JSON")
+Rel(iot_device, tunnel, "Ingest Data", "HTTPS/POST")
 
-node "Docker Host Server" {
-    node "EMQX Container" {
-        artifact "MQTT Broker" as mqtt
-        artifact "Management UI" as emqx_ui
-    }
-    
-    node "MongoDB Container" {
-        artifact "Database Engine" as mongo
-        artifact "Data Files" as data
-    }
-    
-    node "Node-RED Container" {
-        artifact "Flow Engine" as nodered
-        artifact "Flow Editor" as editor
-    }
-    
-    node "AirPhyNet Container" {
-        artifact "FastAPI Service" as fastapi
-        artifact "PyTorch Model" as model
-    }
-    
-    node "Grafana Container" {
-        artifact "Dashboard Engine" as grafana
-        artifact "Visualization" as viz
-    }
-}
-
-node "User Devices" {
-    artifact "Smartphone" as phone
-    artifact "Laptop" as laptop
-    artifact "Tablet" as tablet
-}
-
-' Physical connections
-esp1 --> mq1 : ADC
-esp1 --> dht1 : GPIO
-esp2 --> mq2 : ADC
-esp2 --> dht2 : GPIO
-
-' Network connections
-esp1 --> wifi : WiFi
-esp2 --> wifi : WiFi
-wifi --> mqtt : MQTT/TCP
-
-' Container communications
-mqtt --> nodered : Subscribe
-nodered --> mongo : Store Data
-mongo --> fastapi : Historical Data
-fastapi --> mongo : Store Predictions
-
-' User access
-phone --> nextjs : HTTPS
-laptop --> nextjs : HTTPS
-tablet --> nextjs : HTTPS
-phone --> qr1 : Scan
-phone --> qr2 : Scan
-
-' API connections
-nextjs --> mongo : Query Data
-api --> fastapi : ML Requests
-grafana --> mongo : Analytics
-
-note right of mqtt : Port 1883
-note right of mongo : Port 27017
-note right of nodered : Port 1880
-note right of fastapi : Port 8000
-note right of grafana : Port 3000
-note right of nextjs : Port 443 (HTTPS)
+Rel(tunnel, backend, "Forward Traffic", "Local TCP/8000")
+Rel(backend, db, "Read/Write", "Mongo Wire Protocol (TLS)")
+Rel(frontend, db, "Read/Write (Server Actions)", "Mongo Wire Protocol (TLS)")
 
 @enduml

@@ -6,33 +6,29 @@ title Container Diagram - AQI Monitoring System
 Person(user, "Building Occupant", "Uses QR codes to access room data")
 Person(admin, "Facility Manager", "Manages sensors and system")
 
-System_Boundary(aqi, "AQI Monitoring System") {
-    Container(web, "Web Application", "Next.js, React", "Provides dashboard and admin interface")
-    Container(api, "API Gateway", "Next.js API Routes", "Handles HTTP requests and responses")
+System_Boundary(breev, "Breev Hybrid Architecture") {
+    Container(web, "Web Dashboard", "Next.js (Vercel)", "Admin UI & Public QR Views")
     
-    Container(ingestor, "Data Ingestor", "Python, Paho-MQTT", "Subscribes to MQTT and stores to DB")
-    Container(ml, "Inference Service", "Python, FastAPI, PyTorch", "Provides AQI predictions via API")
+    System_Boundary(local, "Local Server (Proxmox/Docker)") {
+        Container(tunnel, "Cloudflare Tunnel", "cloudflared", "Exposes local services safely")
+        Container(api, "Backend API", "Python FastAPI", "Handles Sensor Data & Logic")
+        Container(ml_engine, "AI Engine", "PyTorch", "Calculates Forecasts")
+    }
     
-    ContainerDb(db, "Timeseries Database", "MongoDB Atlas", "Stores sensor logs, users, and predictions")
-    Container(mqtt, "MQTT Broker", "EMQX Cloud", "Managed Message broker for IoT")
+    ContainerDb(db, "Cloud Database", "MongoDB Atlas", "Stores Sensor Logs & Config")
 }
 
 System_Ext(mobile, "Mobile Device", "Smartphone with QR scanner")
 System_Ext(dagshub, "DagsHub", "ML Experiment Tracking")
 
-Rel(user, mobile, "Scans QR codes")
-Rel(mobile, web, "Views dashboards", "HTTPS")
-Rel(admin, web, "Manages system", "HTTPS")
+Rel(user, web, "Views Real-time Data", "HTTPS")
+Rel(admin, web, "Configures System", "HTTPS")
 
-Rel(web, api, "Makes requests", "HTTP/JSON")
-Rel(api, db, "Queries data", "MongoDB Protocol")
-Rel(api, ml, "Requests predictions", "HTTP/REST")
-Rel(api, mqtt, "Publishes commands (optional)", "MQTTS")
+Rel(web, tunnel, "Fetch Analytics", "HTTPS/JSON")
+Rel(tunnel, api, "Forward Request", "TCP/8000")
 
-Rel(mqtt, ingestor, "Pushes telemetry", "MQTTS")
-Rel(ingestor, db, "Stores sensor data", "MongoDB Protocol")
-
-Rel(ml, db, "Fetches historical data", "MongoDB Protocol")
-Rel(ml, dagshub, "Logs metrics", "HTTPS")
+Rel(api, db, "Read/Write Logs", "MongoWire")
+Rel(api, ml_engine, "Request Forecast", "Internal Call")
+Rel(ml_engine, db, "Read History", "MongoWire")
 
 @enduml

@@ -1,29 +1,20 @@
 @startuml DFD Level 0
-!theme plain
-title DFD Level 0 - Context Diagram
-
-' Compact Layout
-left to right direction
+title DFD Level 0 - Breev Context Diagram
 skinparam linetype ortho
-skinparam nodesep 40
-skinparam ranksep 40
-skinparam wrapWidth 150
 
 ' Entities
-rectangle "Building\nOccupant" as User
-rectangle "Facility\nManager" as Admin
-rectangle "IoT\nSensor" as Sensor
+rectangle "Building Admin" as Admin
+rectangle "Public User" as Public
+rectangle "Sensor Node" as Sensor
 
 ' Main Process
-circle "0.0\nAirPhyNet\nSystem" as System
+usecase "Breev System" as System
 
-' Flows (Shortened Labels)
-User --> System : QR Scan\nRequest
-Admin --> System : Admin\nCommands
-Sensor --> System : Telemetry\nData
-
-System --> User : Dashboard\n& AQI Info
-System --> Admin : Reports\n& Alerts
-System --> Sensor : Config\n(Ack)
+' Relationships
+Sensor --> System : Telemetry Data
+System --> Admin : Reports & Alerts
+Admin --> System : Configuration (Thresholds)
+Public --> System : Request Room Status
+System --> Public : AQI Info & Forecast
 
 @enduml

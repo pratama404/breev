@@ -1,56 +1,27 @@
-@startuml Activity Diagram - To Be (Future State)
-!theme plain
+@startuml Activity - To-Be Process
+title Business Process To-Be (Breev System)
 
-title IoT Air Quality Monitoring System (To-Be)
-
+|Sensor IoT|
 start
+:Continuous Monitoring (24/7);
+:Send Data to Cloud;
 
-:Person approaches room;
-
-:Scan QR code at entrance;
-
-:System displays real-time AQI;
-
-if (AQI > 100?) then (yes)
-  :Show health warning;
-  :Display recommendations;
-  if (Accept risk?) then (no)
-    :Choose different room;
-    stop
-  else (yes)
-    :Enter with precautions;
-  endif
-else (no)
-  :Safe to enter;
+|Breev System|
+:Receive & Store Data;
+:Analyze Trend (AI);
+if (Forecast: Bad Air in 1h?) then (yes)
+    :Send Early Warning Alert;
 endif
 
-:Enter room;
+|Building Manager|
+:Receive Alert on Dashboard;
+:Check Ventilation Remotely;
+:Preventive Action Taken;
 
-:System continuously monitors;
-
-fork
-  :Sensors collect data every 30s;
-  :Data sent via MQTT;
-  :Stored in database;
-fork again
-  :AirPhyNet generates predictions;
-  :6-hour forecast updated;
-fork end
-
-if (Predicted AQI deterioration?) then (yes)
-  :Send early warning;
-  :Suggest preventive actions;
-  :Activate ventilation if automated;
-else (no)
-  :Continue monitoring;
-endif
-
-:Real-time dashboard updates;
-
-:Historical data logged for analysis;
+|Public User|
+:Scan QR at Door;
+:See Green/Safe Status;
+:Enter Room Confidently;
 
 stop
-
-note right: Proactive monitoring\nPredictive capabilities\nData-driven decisions\nAutomated alerts
-
 @enduml

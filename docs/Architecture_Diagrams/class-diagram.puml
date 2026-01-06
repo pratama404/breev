@@ -1,113 +1,47 @@
-@startuml Class Diagram
-!theme plain
+@startuml Class Diagram - Mongo Schema
+title MongoDB Schema Definitions - Breev
 
-title AQI Monitoring System - Class Diagram
-
-class Sensor {
-  +sensor_id: String
-  +mac_address: String
-  +name: String
-  +location: String
-  +status: String
-  +installed_date: Date
-  +qr_code: String
-  --
-  +calibrate(): void
-  +sendTelemetry(): void
-  +updateStatus(): void
+class "devices" as Device {
+    +ObjectId _id
+    +String sensor_id <<unique>>
+    +String name
+    +String location
+    +String status
+    +Date installed_at
 }
 
-class SensorReading {
-  +id: ObjectId
-  +sensor_id: String
-  +timestamp: Date
-  +temperature: Float
-  +humidity: Float
-  +co2_ppm: Float
-  +mq135_raw: Integer
-  +aqi_calculated: Integer
-  +server_timestamp: Date
-  --
-  +validate(): Boolean
-  +calculateAQI(): Integer
+class "sensor_logs" as Log {
+    +ObjectId _id
+    +String sensor_id <<index>>
+    +Float temperature
+    +Float humidity
+    +Float co2_ppm
+    +Int aqi
+    +Date timestamp <<desc_index>>
 }
 
-class Prediction {
-  +id: ObjectId
-  +sensor_id: String
-  +generated_at: Date
-  +target_time: Date
-  +predicted_aqi: Float
-  +confidence: Float
-  +model_version: String
-  --
-  +isExpired(): Boolean
-  +getAccuracy(): Float
+class "system_settings" as Settings {
+    +ObjectId _id
+    +String type = "global"
+    +String api_key
+    +Object aqi_thresholds
 }
 
-class Device {
-  +sensor_id: String
-  +name: String
-  +location: String
-  +qr_code: String
-  +status: String
-  --
-  +generateQR(): String
-  +updateLocation(): void
-  +setStatus(): void
+class "predictions" as Forecast {
+    +ObjectId _id
+    +String sensor_id
+    +Date generated_at
+    +Array forecast_hours
 }
 
-class User {
-  +user_id: String
-  +username: String
-  +password_hash: String
-  +role: String
-  +created_at: Date
-  --
-  +authenticate(): Boolean
-  +hasPermission(): Boolean
-}
+' Relationships (Conceptual)
+Device "1" -- "0..*" Log : "generates"
+Device "1" -- "0..*" Forecast : "has"
+Settings "1" -- "1" Device : "configures"
 
-class AirPhyNet {
-  +input_size: Integer
-  +hidden_size: Integer
-  +num_layers: Integer
-  --
-  +forward(): Tensor
-  +physics_loss(): Float
-  +predict(): Float
-}
-
-class MQTTHandler {
-  +broker_host: String
-  +port: Integer
-  +client_id: String
-  --
-  +connect(): Boolean
-  +publish(): void
-  +subscribe(): void
-  +disconnect(): void
-}
-
-class APIController {
-  --
-  +getSensorData(): JSON
-  +getDevices(): JSON
-  +addDevice(): JSON
-  +deleteDevice(): Boolean
-  +getPredictions(): JSON
-}
-
-' Relationships
-Sensor ||--o{ SensorReading : generates
-Sensor ||--o{ Prediction : has_predictions
-Device ||--|| Sensor : represents
-SensorReading }o--|| AirPhyNet : input_to
-Prediction }o--|| AirPhyNet : output_from
-User ||--o{ Device : manages
-MQTTHandler ||--o{ SensorReading : transmits
-APIController ||--o{ Sensor : controls
-APIController ||--o{ Device : manages
-APIController ||--o{ Prediction : serves
+note right of Settings
+ Singleton Document
+ Stores global config
+end note
 
 @enduml

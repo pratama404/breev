@@ -1,14 +1,15 @@
 {
-  "name": "aqi-iot-monitoring-system",
-  "version": "1.0.0",
-  "description": "IoT-based Air Quality Monitoring System with AirPhyNet ML Predictions",
+  "name": "breev-monitoring-system",
+  "version": "2.0.0",
+  "description": "Breev: Hybrid IoT Air Quality Monitoring with AI Forecasting",
   "main": "index.js",
   "scripts": {
     "dev": "cd web-frontend && npm run dev",
     "build": "cd web-frontend && npm run build",
     "start": "cd web-frontend && npm start",
-    "backend": "cd backend-services && docker-compose up -d",
-    "backend-stop": "cd backend-services && docker-compose down",
+    "backend": "docker compose -f backend-services/docker-compose.yml up -d",
+    "backend:stop": "docker compose -f backend-services/docker-compose.yml down",
+    "backend:logs": "docker compose -f backend-services/docker-compose.yml logs -f",
     "setup": "npm run backend && cd web-frontend && npm install && npm run dev",
     "firmware": "cd firmware && pio run --target upload",
     "monitor": "cd firmware && pio device monitor"
@@ -23,7 +24,7 @@
     "machine-learning",
     "physics-informed-neural-network"
   ],
-  "author": "AQI Monitoring Team",
+  "author": "Breev Team",
   "license": "MIT",
   "repository": {
     "type": "git",

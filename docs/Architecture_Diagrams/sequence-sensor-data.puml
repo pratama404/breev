@@ -1,35 +1,36 @@
-@startuml Sequence - Sensor Data Flow
-!theme plain
-title Sensor Data Processing Sequence (BCE Pattern)
+@startuml Sequence - IoT Ingestion
+title Ref: UC-CORE-01 (Send Sensor Data)
 
-actor "IoT Device" as Act
-boundary "MQTTListener" as Bound
-control "DataIngestor" as Ctrl
-entity "SensorLog" as Ent
-database "MongoDB" as DB
+participant "ESP32 Device" as IoT
+participant "Cloudflare Tunnel" as Tunnel
+participant "FastAPI Backend" as API
+database "MongoDB Atlas" as DB
 
-== Data Transmission ==
+== Initialization ==
+IoT -> IoT: Connect WiFi
+IoT -> IoT: Read API_KEY from Memory
 
-Act -> Bound: Publish Telemetry (MQTT)
-activate Bound
-Bound -> Ctrl: Forward Message
-activate Ctrl
+== Ingestion Loop (Every 30s) ==
+IoT -> IoT: Read DHT22 (Temp/Hum)
+IoT -> IoT: Read MQ135 (Gas)
+IoT -> Tunnel: POST /ingest (JSON) + x-api-keyheader
+note right: Payload: {sensor_id, temp, hum, co2}
 
-== Data Processing ==
+Tunnel -> API: SSL Forwarding
+activate API
 
-Ctrl -> Ctrl: Validate Payload
-Ctrl -> Ent: Create Log Object
-activate Ent
-Ent --> Ctrl: Validated Object
-deactivate Ent
+API -> API: Check x-api-key
+alt Invalid Key
+    API --> Tunnel: 401 Unauthorized
+    Tunnel --> IoT: 401 Error
+else Valid Key
+    API -> DB: Insert into 'sensor_logs'
+    activate DB
+    DB --> API: Success (ObjectId)
+    deactivate DB
+    API --> Tunnel: 200 OK
+    Tunnel --> IoT: 200 OK
+end
 
-Ctrl -> DB: Insert One
-activate DB
-DB --> Ctrl: Acknowledge
-deactivate DB
-
-Ctrl --> Bound: Processed
-deactivate Ctrl
-deactivate Bound
-
+deactivate API
 @enduml

@@ -1,53 +1,37 @@
-@startuml Sequence - QR Code Access
-!theme plain
+@startuml Sequence - QR Access
+title Ref: UC-PUB-01 (Scan Room QR Code)
 
-title QR Code Room Access Sequence
-
-actor "User" as Act
-boundary "RoomPage" as UI
-control "RoomController" as Ctrl
-entity "SensorData" as Ent
+actor "Public User" as User
+participant "Mobile Browser" as Browser
+participant "Next.js Frontend\n(Vercel)" as FE
+participant "FastAPI Backend\n(Tunnel)" as BE
 database "MongoDB" as DB
+participant "AI Engine\n(PyTorch)" as AI
 
-== QR Code Scanning ==
+== User Scan ==
+User -> Browser: Scan QR Code
+Browser -> FE: GET /scan/[device_id]
+activate FE
 
-User -> Phone: Open camera
-User -> QR: Point camera at code
-QR --> Phone: Decode URL
-Phone -> Server: HTTP GET /room/{sensor_id}
+FE -> BE: GET /api/sensors/[device_id]
+activate BE
+BE -> DB: FindOne('devices', id)
+DB --> BE: Device Metadata
+BE -> DB: FindLast('sensor_logs', id)
+DB --> BE: Telemetry Data
+BE --> FE: JSON {device, telemetry}
+deactivate BE
 
-== Server-Side Rendering ==
+== Prediction Fetch ==
+FE -> FE: Render Current Status UI
+FE -> BE: GET /predict (async)
+activate BE
+BE -> AI: Inference(history_data)
+AI --> BE: Forecast list[6h]
+BE --> FE: JSON {forecast}
+deactivate BE
 
-Server -> DB: Query current sensor data
-activate DB
-DB --> Server: Latest readings
-deactivate DB
-
-Server -> DB: Query historical data (24h)
-activate DB
-DB --> Server: Historical dataset
-deactivate DB
-
-Server -> ML: GET /predictions/{sensor_id}
-activate ML
-ML -> DB: Check cached predictions
-DB --> ML: Prediction data
-ML --> Server: Prediction response
-deactivate ML
-
-== Page Generation ==
-
-Server -> Server: Render dashboard with data
-Server -> Server: Generate AQI gauge
-Server -> Server: Create trend charts
-Server --> Phone: Complete HTML page
-
-== User Interaction ==
-
-Phone -> Phone: Display room dashboard
-Phone -> User: Show AQI status
-User -> User: Make room entry decision
-
-note over User, ML: Entire process < 2 seconds
-
+FE -> FE: Render Line Chart
+FE --> User: Show Full Page
+deactivate FE
 @enduml

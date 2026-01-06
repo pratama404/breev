@@ -1,0 +1,28 @@
+@startuml Flowchart - AI Pipeline
+title AI Forecasting Pipeline (Breev)
+
+start
+:Trigger: Scheduled Job or On-Demand;
+
+partition "Data Preprocessing" {
+    :Fetch Last 24h Sensor Logs;
+    :Resample to Hourly Averages;
+    :Handle Missing Values (Interpolation);
+    :Normalize (MinMax Scalar);
+}
+
+partition "Model Inference" {
+    :Load 'aqi_model.pth' (PyTorch);
+    :Input: [1, 24, 5] Tensor;
+    :Forward Pass (LSTM);
+    :Output: [1, 6] Tensor;
+}
+
+partition "Post-Processing" {
+    :Inverse Transform (Denormalize);
+    :Format time labels (+1h, +2h...);
+    :Save to 'predictions' collection;
+}
+
+stop
+@enduml

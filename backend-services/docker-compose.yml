@@ -18,14 +18,16 @@ services:
   ingestion-service:
     image: pratama404/airphynet-service:latest
     container_name: ingestion-service
-    # ports:
-    #   - "8001:8001" # Prometheus Metrics (Exposed directly on Host)
+    command: uvicorn inference_api:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000" # API Port
+      - "8001:8001" # Prometheus Metrics
     volumes:
       - ./airphynet-model:/app
-    network_mode: host # <--- JALAN TOL (Bypass Docker Network)
+    # network_mode: host # Removed for Windows compatibility
     environment:
       - MONGODB_URI=${MONGODB_URI}
-      - MQTT_BROKER=localhost # <--- Connect to Local EMQX via Host
+      - MQTT_BROKER=emqx # Connect via Docker Service Name
       - MQTT_PORT=${MQTT_PORT}
       - MQTT_PORT=${MQTT_PORT}
       - MQTT_TOPIC=${MQTT_TOPIC}
@@ -47,14 +49,14 @@ services:
       - ./node-red-flows:/data
     restart: always
 
-  mongodb-exporter:
-    image: percona/mongodb_exporter:0.39.0
-    restart: always
-    command:
-      - '--mongodb.uri=${MONGODB_URI}'
-      - '--mongodb.direct-connect=false'
-    ports:
-      - "9216:9216"
+#   mongodb-exporter:
+#     image: percona/mongodb_exporter:0.39.0
+#     restart: always
+#     command:
+#       - '--mongodb.uri=${MONGODB_URI}'
+#       - '--mongodb.direct-connect=false'
+#     ports:
+#       - "9216:9216"
 
   prometheus:
     image: prom/prometheus:latest
@@ -79,17 +81,17 @@ services:
     depends_on:
       - prometheus
 
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    restart: always
-    container_name: cadvisor
-    ports:
-      - "8080:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
+#   cadvisor:
+#     image: gcr.io/cadvisor/cadvisor:latest
+#     restart: always
+#     container_name: cadvisor
+#     ports:
+#       - "8080:8080"
+#     volumes:
+#       - /:/rootfs:ro
+#       - /var/run:/var/run:ro
+#       - /sys:/sys:ro
+#       - /var/lib/docker/:/var/lib/docker:ro
 
   emqx:
     image: emqx/emqx:5.3.2

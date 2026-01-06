@@ -1,48 +1,31 @@
-@startuml Activity - ML Prediction Process
-!theme plain
+@startuml Activity - AI Prediction
+title Ref: UC-AI-01 (Generate Forecast)
 
-title AirPhyNet Prediction Generation
-
-|Timer|
 start
-:Trigger prediction job (every 10 min);
+:Receive Prediction Request;
+:Extract 'sensor_id' from Payload;
 
-|ML Service|
-:Receive prediction request;
-:Query MongoDB for historical data;
+partition "Data Preparation" {
+    :Query MongoDB 'sensor_logs';
+    :Fetch last 24h data (sliding window);
+    if (Data Points < 100?) then (yes)
+        :Error: Insufficient Data;
+        stop
+    else (no)
+        :Normalize Data (0-1 Scale);
+        :Create Tensor [Batch, Seq, Feature];
+    endif
+}
 
-if (Sufficient data points?) then (no)
-  :Return error - insufficient data;
-  stop
-else (yes)
-  :Prepare data window (last 24 readings);
-endif
+partition "AI Inference (PyTorch)" {
+    :Load Pre-trained LSTM Model;
+    :Forward Pass (Input Tensor);
+    :Get Output Tensor (Next 6h);
+    :Denormalize Output;
+}
 
-:Normalize sensor data;
-:Create input tensor;
-
-|AirPhyNet Model|
-:LSTM forward pass;
-:Apply physics constraints;
-:Generate predictions (1-6 hours);
-
-|ML Service|
-:Post-process predictions;
-:Calculate confidence scores;
-:Format prediction response;
-
-|Database|
-:Store predictions;
-:Update timestamp;
-
-|Frontend|
-if (User viewing dashboard?) then (yes)
-  :Update prediction charts;
-  :Show future AQI trends;
-else (no)
-  :Cache for next request;
-endif
+:Format JSON Response;
+:Return Forecast Array;
 
 stop
-
 @enduml

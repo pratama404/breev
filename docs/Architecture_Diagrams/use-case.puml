@@ -1,83 +1,56 @@
-@startuml Use Case Diagram
-!theme plain
-
+@startuml Use Case Diagram - Breev
 left to right direction
+skinparam packageStyle rectangle
 
-actor "Building Occupant" as User
-actor "Facility Manager" as Admin
-actor "Data Scientist" as Researcher
-actor "System Timer" as Timer
+actor "Building Manager" as Admin
+actor "Public User" as Public
+actor "ESP32 Device" as Device
 
-rectangle "AQI Monitoring System" {
-  
-  package "Public Features" {
-    usecase "Scan QR Code" as UC1
-    usecase "View Real-time AQI" as UC2
-    usecase "View Historical Trends" as UC3
-    usecase "Get Health Recommendations" as UC4
-    usecase "View Predictions" as UC5
-  }
-  
-  package "Admin Features" {
-    usecase "Login to Admin Panel" as UC6
-    usecase "Add New Sensor" as UC7
-    usecase "Remove Sensor" as UC8
-    usecase "Generate QR Code" as UC9
-    usecase "View All Devices" as UC10
-    usecase "Access Grafana Dashboard" as UC11
-  }
-  
-  package "System Features" {
-    usecase "Collect Sensor Data" as UC12
-    usecase "Process MQTT Messages" as UC13
-    usecase "Store Data in Database" as UC14
-    usecase "Generate ML Predictions" as UC15
-    usecase "Send Alerts" as UC16
-  }
-  
-  package "Research Features" {
-    usecase "Export Historical Data" as UC17
-    usecase "Analyze Patterns" as UC18
-    usecase "Validate Model Accuracy" as UC19
-  }
+package "Breev System" {
+    package "Core Monitoring" {
+        usecase "Send Sensor Data\n(UC-CORE-01)" as UC_01
+        usecase "Validate API Key\n(UC-CORE-02)" as UC_02
+        usecase "Store Telemetry\n(UC-CORE-03)" as UC_03
+    }
+
+    package "Dashboard & Analytics" {
+        usecase "Login to Dashboard\n(UC-WEB-01)" as UC_04
+        usecase "View Real-time Charts\n(UC-WEB-02)" as UC_05
+        usecase "Download PDF Report\n(UC-WEB-03)" as UC_06
+        usecase "Manage Devices\n(UC-WEB-04)" as UC_07
+    }
+
+    package "AI & Intelligence" {
+        usecase "Generate 6h Forecast\n(UC-AI-01)" as UC_08
+        usecase "Calculate Daily Insight\n(UC-AI-02)" as UC_09
+    }
+
+    package "Public Access" {
+        usecase "Scan Room QR Code\n(UC-PUB-01)" as UC_10
+        usecase "View Room Status\n(UC-PUB-02)" as UC_11
+    }
 }
 
-' User relationships
-User --> UC1
-User --> UC2
-User --> UC3
-User --> UC4
-User --> UC5
+' Relations
+Device --> UC_01
+UC_01 ..> UC_02 : include
+UC_02 ..> UC_03 : include
 
-' Admin relationships
-Admin --> UC6
-Admin --> UC7
-Admin --> UC8
-Admin --> UC9
-Admin --> UC10
-Admin --> UC11
+Admin --> UC_04
+UC_04 --> UC_05
+Admin --> UC_06
+Admin --> UC_07
 
-' System relationships
-Timer --> UC12
-Timer --> UC13
-Timer --> UC14
-Timer --> UC15
-Timer --> UC16
+Public --> UC_10
+UC_10 ..> UC_11 : include
+UC_11 ..> UC_08 : include
 
-' Researcher relationships
-Researcher --> UC17
-Researcher --> UC18
-Researcher --> UC19
+note right of UC_01
+  Details in sequence-ingestion.puml
+end note
 
-' Include relationships
-UC1 ..> UC2 : <<include>>
-UC2 ..> UC3 : <<include>>
-UC2 ..> UC4 : <<include>>
-UC2 ..> UC5 : <<include>>
-
-UC7 ..> UC9 : <<include>>
-UC12 ..> UC13 : <<include>>
-UC13 ..> UC14 : <<include>>
-UC14 ..> UC15 : <<include>>
+note right of UC_10
+  Details in sequence-qr-access.puml
+end note
 
 @enduml

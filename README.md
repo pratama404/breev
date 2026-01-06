@@ -1,198 +1,120 @@
-# Sistem Monitoring Kualitas Udara Berbasis IoT
+# 🍃 Breev - Smart Air Quality Monitoring System
 
-Sistem monitoring dan prediksi indeks kualitas udara (AQI) berbasis IoT dengan teknologi AirPhyNet untuk prediksi berbasis fisika.
+![Version](https://img.shields.io/badge/version-2.0-green)
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109-teal)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-## 🏗️ Arsitektur Sistem
+**Breev** adalah platform IoT & SaaS lengkap untuk memantau kualitas udara secara real-time dengan **ESP32**, **AI Forecasting**, dan **Web Dashboard** yang intuitif.
 
-```
-┌─────────────────┐    ┌──────────────┐    ┌─────────────────┐
-│   ESP32 + MQ135 │───▶│ MQTT Broker  │───▶│   Node-RED      │
-│   DHT22 Sensors │    │   (EMQX)     │    │  Data Pipeline  │
-└─────────────────┘    └──────────────┘    └─────────────────┘
-                                                     │
-┌─────────────────┐    ┌──────────────┐    ┌─────────────────┐
-│  Next.js Web    │◀───│   MongoDB    │◀───│  AirPhyNet ML   │
-│   Dashboard     │    │   Database   │    │   Predictions   │
-└─────────────────┘    └──────────────┘    └─────────────────┘
-```
+🌐 **Live Demo**: [https://breev.vercel.app](https://breev.vercel.app)
+📚 **Documentation**: [docs/](./docs/)
 
-## 🚀 Fitur Utama
+## ✨ Fitur Utama
 
-- **Monitoring Real-time**: Suhu, kelembaban, dan kualitas udara
-- **Prediksi AI**: Model AirPhyNet berbasis physics-informed neural network
-- **QR Code Access**: Akses cepat data ruangan via QR code
-- **Admin Dashboard**: Manajemen perangkat dan analitik
-- **Grafana Integration**: Visualisasi data lanjutan
+### 📡 Core IoT & Monitoring
+- **Real-time AQI** - Pemantauan Indeks Kualitas Udara detik-ke-detik.
+- **Multi-Sensor Support** - Integrasi suhu, kelembaban, dan CO2 (MQ135).
+- **QR Code Access** - Akses publik cepat ke data ruangan via scan QR.
 
-## 📋 Persyaratan Sistem
+### 💻 Web Dashboard (Admin)
+- **device Management** - Tambah/Hapus device sensor dengan mudah.
+- **PDF Reporting** - Generate laporan eksekutif sekali klik.
+- **Forecasting Chart** - Prediksi tren kualitas udara 6 jam ke depan via AI.
+- **Secure Settings** - Manajemen API Key dan Notifikasi yang aman.
 
-### Hardware
-- ESP32 Development Board
-- Sensor MQ135 (Gas/Air Quality)
-- Sensor DHT22 (Temperature & Humidity)
-- Breadboard dan kabel jumper
-- Power supply 5V
+### 🧠 AI & Security (Breev 2.0)
+- **Smart Prediction** - Machine Learning (PyTorch) untuk memprediksi polusi.
+- **API Key Enforcement** - Proteksi endpoint backend dari akses tidak sah.
+- **Role-Based Auth** - Login khusus Admin untuk konfigurasi sistem.
 
-### Software
+## 🚀 Tech Stack
+
+- **Frontend**: Next.js 14, Tailwind CSS, Recharts, Chart.js, JSPDF
+- **Backend**: Python FastAPI, Uvicorn, Pandas, PyTorch
+- **Database**: MongoDB Atlas (Cloud)
+- **IoT Firmware**: C++ (Connect via HTTPS/Cloudflare Tunnel)
+- **Infrastructure**: Docker Compose, Cloudflare Tunnels, Proxmox (Optional)
+
+## 📦 Quick Start
+
+### Prerequisites
 - Docker & Docker Compose
-- Node.js 18+ (untuk development)
-- Python 3.9+ (untuk ML service)
+- Node.js 18+ (untuk pengembangan Frontend)
+- ESP32 Board (untuk Hardware)
 
-## 🛠️ Instalasi
+### Installation
 
-### 1. Clone Repository
+#### 1. Clone Repository
 ```bash
-git clone <repository-url>
-cd aqi-iot-system
+git clone https://github.com/pratama404/breev.git
+cd breev
 ```
 
-### 2. Setup Backend Services
+#### 2. Setup Backend (Docker)
 ```bash
 cd backend-services
-docker-compose up -d
+cp .env.example .env
+# Edit .env dengan MONGODB_URI Anda
+docker compose up -d --build
 ```
 
-Services yang akan berjalan:
-- EMQX MQTT Broker: `http://localhost:18083` (admin/public)
-- MongoDB: `localhost:27017`
-- Node-RED: `http://localhost:1880`
-- Grafana: `http://localhost:3000` (admin/admin123)
-- AirPhyNet API: `http://localhost:8000`
-
-### 3. Setup Frontend
+#### 3. Setup Frontend (Local/Vercel)
 ```bash
 cd web-frontend
 npm install
 npm run dev
 ```
 
-Web dashboard: `http://localhost:3001`
+#### 4. Flash Firmware
+Buka `firmware/breev.ino`, isi WiFi dan API Key, lalu upload ke ESP32.
 
-### 4. Upload Firmware ke ESP32
-```bash
-cd firmware
-# Edit config.h dengan kredensial WiFi dan MQTT
-pio run --target upload
+👉 **Panduan Lengkap**: [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md)
+
+## 🏗️ Struktur Project
+
+```
+breev/
+├── web-frontend/       # Next.js Dashboard App
+│   ├── pages/          # Routes & API Handlers
+│   ├── components/     # React UI Components
+│   └── public/         # Icons & Manifest
+├── backend-services/   # Dockerized Services
+│   ├── airphynet-model/# FastAPI & ML Engine
+│   └── docker-compose.yml
+├── firmware/           # ESP32 Source Code
+│   ├── breev.ino       # Main Arduino Sketch
+│   └── src/            # PlatformIO Source
+└── docs/               # Architecture & Guides
 ```
 
-## 📊 Konfigurasi
+## 📚 Dokumentasi
 
-### WiFi & MQTT (firmware/src/config.h)
-```cpp
-const char* WIFI_SSID = "YOUR_WIFI_SSID";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
-const char* MQTT_SERVER = "your-mqtt-broker.com";
-```
+### Main Docs
+- [PROJECT-SUMMARY.md](./PROJECT-SUMMARY.md) - Overview Project
+- [ROADMAP.md](./ROADMAP.md) - Rencana Pengembangan
+- [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md) - Panduan Deploy
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - Panduan Kontribusi
 
-### Environment Variables (.env.local)
-```env
-MONGODB_URI=mongodb://admin:password123@localhost:27017/aqi_monitoring?authSource=admin
-AIRPHYNET_API_URL=http://localhost:8000
-NEXTAUTH_SECRET=your-secret-key
-```
+### Technical Docs
+- [docs/PRD-BREEV.md](./docs/PRD-BREEV.md) - Product Requirements (PRD)
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - Diagram Sistem (C4)
+- [docs/API-DOCUMENTATION.md](./docs/API-DOCUMENTATION.md) - Spesifikasi API
+- [docs/DATABASE-SCHEMA.md](./docs/DATABASE-SCHEMA.md) - Skema MongoDB
+- [docs/UML-DIAGRAMS.md](./docs/UML-DIAGRAMS.md) - UML (Use Case, Sequence)
 
-## 🔧 Penggunaan
+## 👥 Team
 
-### 1. Monitoring Real-time
-- Akses web dashboard di `http://localhost:3001`
-- Pilih ruangan untuk melihat data real-time
-- Lihat grafik tren dan prediksi AQI
+- **IoT Engineer** - Firmware & Hardware Integration
+- **Fullstack Developer** - Next.js & FastAPI
+- **Product Owner** - Strategy & Branding
 
-### 2. QR Code Access
-- Login sebagai admin
-- Pilih perangkat dan generate QR code
-- Print dan tempel QR code di ruangan
-- Scan QR code untuk akses cepat
+## 📞 Contact
 
-### 3. Admin Dashboard
-- Tambah/hapus perangkat sensor
-- Generate QR code untuk ruangan
-- Akses Grafana untuk analitik lanjutan
-
-## 🧠 Model AirPhyNet
-
-Model prediksi menggunakan Physics-Informed Neural Network yang menggabungkan:
-- LSTM untuk pola temporal
-- Persamaan adveksi-difusi untuk constraint fisika
-- Prediksi AQI hingga 6 jam ke depan
-
-### API Endpoints
-```
-POST /predict - Generate predictions
-GET /predictions/{sensor_id} - Get latest predictions
-GET /health - Health check
-```
-
-## 📈 Monitoring & Analytics
-
-### Grafana Dashboards
-- Real-time sensor metrics
-- Historical trends
-- Anomaly detection
-- Multi-room heatmaps
-
-### MongoDB Collections
-- `sensor_logs`: Raw sensor data
-- `devices`: Device metadata
-- `predictions`: ML predictions
-- `users`: Admin users
-
-## 🔒 Keamanan
-
-- HTTPS untuk web traffic
-- MQTT dengan QoS Level 1
-- Admin authentication
-- Input validation & sanitization
-
-## 🐛 Troubleshooting
-
-### ESP32 tidak terhubung WiFi
-1. Periksa kredensial WiFi di `config.h`
-2. Pastikan sinyal WiFi kuat (RSSI > -80 dBm)
-3. Restart ESP32
-
-### Data tidak muncul di dashboard
-1. Periksa koneksi MQTT broker
-2. Cek log Node-RED di `http://localhost:1880`
-3. Verifikasi MongoDB connection
-
-### Prediksi tidak tersedia
-1. Pastikan AirPhyNet service running
-2. Cek minimal 10 data points tersedia
-3. Restart ML service jika perlu
-
-## 📝 API Documentation
-
-### Sensor Data API
-```
-GET /api/sensors/{id} - Get sensor data
-GET /api/devices - List all devices
-POST /api/devices - Add new device
-DELETE /api/devices/{id} - Remove device
-```
-
-### Predictions API
-```
-GET /api/predictions/{id} - Get predictions
-POST /api/predictions/{id} - Trigger new prediction
-```
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Create feature branch
-3. Commit changes
-4. Push to branch
-5. Create Pull Request
-
-## 📄 License
-
-MIT License - see LICENSE file for details
-
-## 📞 Support
-
-Untuk bantuan teknis, silakan buka issue di repository ini atau hubungi tim pengembang.
+- Website: [breev.vercel.app](https://breev.vercel.app/)
+- Email: support@breev.id
 
 ---
 
-**Dikembangkan dengan ❤️ untuk monitoring kualitas udara yang lebih baik**
+Made with 🍃 for a cleaner future.

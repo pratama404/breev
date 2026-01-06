@@ -1,31 +1,22 @@
-@startuml DFD Level 2
-!theme plain
-title DFD Level 2 - Process 2.0: ML Prediction
+@startuml DFD Level 2 - Reporting
+title DFD Level 2 - Reporting & Visualization Process (3.0)
 
-' Compact Horizontal Layout
-left to right direction
-skinparam linetype ortho
-skinparam nodesep 30
-skinparam ranksep 30
+entity "User Request" as User
+circle "3.1\nFetch Data" as P31
+circle "3.2\nFormat UI/PDF" as P32
+circle "3.3\nCheck Alerts" as P33
 
-' Interfaces
-rectangle "3.0\nUI" as P3
-database "D1\nLogs" as D1
-database "D2\nPreds" as D2
+database "MongoDB" as DB
+entity "Notification" as Alert
 
-' Sub-processes
-circle "2.1\nReceive" as P2_1
-circle "2.2\nPre-\nprocess" as P2_2
-circle "2.3\nInfer" as P2_3
-circle "2.4\nOutput" as P2_4
+User --> P31 : Trigger View
+P31 --> DB : Query Aggregation
+DB --> P31 : Result Set
 
-' Logic
-P3 --> P2_1 : Request
-P2_1 --> D1 : Query
-D1 -.-> P2_2 : Read
-P2_2 --> P2_3 : Vector
-P2_3 --> D2 : Save
-P2_3 --> P2_4 : Raw
-P2_4 --> P3 : JSON
+P31 --> P32 : Raw Data
+P32 --> User : Rendered Chart/PDF
+
+P31 --> P33 : New Data Check
+P33 --> Alert : Send Email (if Critical)
 
 @enduml

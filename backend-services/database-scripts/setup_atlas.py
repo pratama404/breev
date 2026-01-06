@@ -52,26 +52,15 @@ for device in sample_devices:
     except pymongo.errors.DuplicateKeyError:
         print(f" - Device {device['sensor_id']} already exists (skipping)")
 
-# 5. Insert Admin User (if not exist)
-admin_user = {
-    "username": "admin",
-    "password": "$2b$10$rOzJmZKz8qHqV8qGqGqGqOzJmZKz8qHqV8qGqGqGqOzJmZKz8qHqV8", # hashed "admin123"
-    "role": "admin",
-    "created_at": datetime.now()
-}
-
-existing_admin = db.users.find_one({"username": "admin"})
-if not existing_admin:
-    db.users.insert_one(admin_user)
-    print(" - Admin user created (user: admin, pass: admin123)")
-else:
-    print(" - Admin user already exists")
+# 5. [Deprecated] Insert Admin User 
+# Auth is now handled via Environment Variables (ADMIN_PASSWORD) in Next.js
+# This section is removed to avoid confusion.
 
 # 6. Insert Default System Settings (if not exist)
 default_settings = {
     "type": "global",
     "aqi_threshold": { "moderate": 100, "unhealthy": 150 },
-    "mqtt": { "broker_url": "mqtt://localhost", "topic": "air-quality/data", "qos": 1 },
+    "mqtt": { "broker_url": "mqtt://emqx", "topic": "air-quality/data", "qos": 1 },
     "notification": { "enabled": True, "channel": ["dashboard"] },
     "api_key": "sk_live_default_setup_key_change_me" 
 }

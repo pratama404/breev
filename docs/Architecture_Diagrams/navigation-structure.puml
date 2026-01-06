@@ -1,50 +1,32 @@
-@startuml Navigation Structure
-!theme plain
+@startuml Navigation Structure - Breev Dashboard
+title Application Navigation Map
 
-skinparam backgroundColor #FFFFFF
+state "Landing Page" as Home
+state "Admin Login" as Login
+state "Public Scan" as QR_Page
 
-package "Public Pages" {
-  [Home Page] as Home
-  [Room Monitoring] as Room
-  [QR Scan Result] as QRResult
+state "Admin Dashboard" as Admin {
+    state "Overview" as DB_Home
+    state "Device Management" as DB_Devices
+    state "Analytics & Trends" as DB_Analytics
+    state "System Settings" as DB_Settings
 }
 
-package "Admin Pages" {
-  [Admin Login] as Login
-  [Admin Dashboard] as AdminDash
-  [Device Management] as DeviceMgmt
-  [QR Generator] as QRGen
-}
+[*] --> Home : Visit Root
+Home --> Login : Click Login
+Home --> QR_Page : Scan QR
 
-package "API Endpoints" {
-  [/api/devices] as DeviceAPI
-  [/api/sensors/{id}] as SensorAPI
-  [/api/predictions/{id}] as PredAPI
-}
+Login --> DB_Home : Auth Success (Token)
+Login --> Login : Auth Fail
 
-package "External Services" {
-  [Grafana Dashboard] as Grafana
-  [AirPhyNet Service] as MLService
-}
+DB_Home --> DB_Devices : Sidebar
+DB_Home --> DB_Analytics : Sidebar
+DB_Home --> DB_Settings : Sidebar
 
-' Navigation flows
-Home --> Room : Select Room
-Home --> Login : Admin Access
-QRResult --> Room : Scan QR Code
+DB_Devices --> DB_Devices : Add/Delete Device
+DB_Settings --> DB_Settings : Generate API Key
 
-Login --> AdminDash : Authenticate
-AdminDash --> DeviceMgmt : Manage Devices
-AdminDash --> QRGen : Generate QR
-AdminDash --> Grafana : Analytics
-
-' API connections
-Room --> SensorAPI : Get Data
-Room --> PredAPI : Get Predictions
-DeviceMgmt --> DeviceAPI : CRUD Operations
-QRGen --> DeviceAPI : Device Info
-
-' External integrations
-PredAPI --> MLService : ML Predictions
-AdminDash --> Grafana : External Link
+QR_Page --> QR_Page : View Realtime
+QR_Page --> QR_Page : View Forecast
 
 @enduml

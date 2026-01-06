@@ -23,30 +23,17 @@ async def get_api_key(api_key_header: str = Security(API_KEY_HEADER)):
     if api_key_header == os.getenv("API_SECRET_KEY"):
         return api_key_header
     
-    # 2. Check Database (Generated Key)
-    # We look for the 'global' settings document where the frontend saves the key
+    # 2. Check Database (Stored Key from Settings)
     settings = db.system_settings.find_one({"type": "global"})
-    if settings and "config" in settings:
-        # The frontend saves it as part of 'notification' or standalone? 
-        # Wait, the Frontend 'ApiKeyGenerator' is purely UI state currently in the SettingsForms.js audit I did earlier.
-        # It DOES NOT save to 'config.api_key' in the POST /api/settings handler I wrote.
-        # I need to verify if I added it to the saved payload.
-        # Checking my memory/history: I added 'POST /api/settings' which saves 'req.body'. 
-        return api_key_header # Placeholder until I fix Frontend to SAVE the key.
-    
-    # For now, to avoid breaking the user's current flow immediately, 
-    # I will allow if NO key is set in DB, or if key matches "breev-secure-admin".
-    # But ideally, we want to enforced it.
-    
-    # Let's implement a simplified check for now:
-    # If header is present, we validate. If not, we warn? No, security must be strict.
-    
-    # Correction: The user asked to "continue" to make it "production ready".
-    # I will enforce it. But I must ensure the Frontend actually SAVES it.
-    # The 'ApiKeyGenerator' in 'SettingsForms.js' uses local state. It does NOT pass it up to 'onSave'.
-    # I need to fix Frontend first to include API Key in the 'onSave' payload.
-    
-    pass 
+    if settings and "api_key" in settings:
+         if api_key_header == settings["api_key"]:
+             return api_key_header
+
+    # 3. Reject if no match
+    raise HTTPException(
+        status_code=401,
+        detail="Invalid or missing API Key"
+    ) 
 
 
 # Instrument for Prometheus/Grafana
@@ -109,7 +96,7 @@ SENSOR_RSSI = Gauge('sensor_rssi_dbm', 'WiFi Signal Strength (dBm)', ['sensor_id
 SENSOR_UPTIME = Gauge('sensor_uptime_seconds', 'Device Uptime in seconds', ['sensor_id'])
 
 # --- HTTP INGESTION ---
-@app.post("/ingest")
+@app.post("/ingest", dependencies=[Depends(get_api_key)])
 async def ingest_sensor_data(data: SensorData):
     try:
         # Convert to dict
@@ -137,7 +124,7 @@ async def ingest_sensor_data(data: SensorData):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/predict", response_model=PredictionResponse)
+@app.post("/predict", response_model=PredictionResponse, dependencies=[Depends(get_api_key)])
 async def predict_air_quality(request: PredictionRequest):
     try:
         # Get historical data from MongoDB

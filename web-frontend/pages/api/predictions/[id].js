@@ -24,6 +24,7 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'x-api-key': process.env.API_SECRET_KEY,
             },
             body: JSON.stringify({
               sensor_id: id,
