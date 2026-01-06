@@ -87,6 +87,14 @@ export default function SettingsPage() {
         }
     };
 
+    const handleSaveApiKey = async (newKey) => {
+        const newSettings = { ...settings, api_key: newKey };
+        setSettings(newSettings);
+        if (await saveSettings(newSettings)) {
+            addToast('API Key saved successfully. Update your devices!', 'warning');
+        }
+    };
+
     return (
         <AdminLayout title="System Settings">
             <div className="mb-8">
@@ -116,7 +124,10 @@ export default function SettingsPage() {
 
                 {/* Right Column: API & Danger Zone */}
                 <div className="space-y-6">
-                    <ApiKeyGenerator />
+                    <ApiKeyGenerator
+                        currentKey={settings?.api_key}
+                        onSave={handleSaveApiKey}
+                    />
 
                     <div className="bg-red-50 p-6 rounded-2xl border border-red-100">
                         <h3 className="text-lg font-bold text-red-900 mb-2">Danger Zone</h3>

@@ -1,6 +1,6 @@
 /*
- * GABUNGAN KODE ESP32 AIRPHYNET (HTTP EDITION)
- * Project: Monitoring Kualitas Udara (AQI) via HTTP API
+ * BREEV FIRMWARE (ESP32 HTTP EDITION)
+ * Project: Breev Air Quality Monitor
  * Hardware: ESP32, DHT22, MQ-135
  * Method: HTTP POST -> Cloudflare Tunnel -> FastAPI
  */
@@ -17,13 +17,14 @@
 // ==========================================
 
 // --- WiFi Credentials ---
-#define WIFI_SSID "|" 
-#define WIFI_PASSWORD "covidsars"
+#define WIFI_SSID "YOUR_WIFI_SSID" 
+#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
 
 // --- API Settings ---
-// GANTI DENGAN URL TUNNEL ANDA! (Contoh: https://airphynet.trycloudflare.com/ingest)
-// Pastikan akhiran /ingest ada.
-const char* apiEndpoint = "https://railroad-export-mice-lucas.trycloudflare.com/ingest"; 
+// GANTI DENGAN URL TUNNEL ANDA! (Contoh: https://your-tunnel.trycloudflare.com/ingest)
+// NOTE: Use 'https' and port 443 (default) for Cloudflare Tunnels
+const char* apiEndpoint = "https://YOUR_TUNNEL_URL.trycloudflare.com/ingest"; 
+#define API_KEY "YOUR_GENERATED_API_KEY_FROM_DASHBOARD" 
 
 // --- Sensor Settings ---
 #define SENSOR_ID "device_001"
@@ -108,6 +109,7 @@ void sendSensorDataHTTP(float temperature, float humidity, float co2_ppm, int aq
         
         if (http.begin(*client, apiEndpoint)) {  
             http.addHeader("Content-Type", "application/json");
+            http.addHeader("x-api-key", API_KEY);
 
             // Buat JSON
             DynamicJsonDocument doc(512);
@@ -149,7 +151,7 @@ void sendSensorDataHTTP(float temperature, float humidity, float co2_ppm, int aq
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("AQI HTTP Monitoring System Starting...");
+    Serial.println("Breev Monitor System Starting...");
     initSensors();
     initWiFi();
 }

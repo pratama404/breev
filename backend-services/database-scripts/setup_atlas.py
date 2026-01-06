@@ -67,4 +67,19 @@ if not existing_admin:
 else:
     print(" - Admin user already exists")
 
+# 6. Insert Default System Settings (if not exist)
+default_settings = {
+    "type": "global",
+    "aqi_threshold": { "moderate": 100, "unhealthy": 150 },
+    "mqtt": { "broker_url": "mqtt://localhost", "topic": "air-quality/data", "qos": 1 },
+    "notification": { "enabled": True, "channel": ["dashboard"] },
+    "api_key": "sk_live_default_setup_key_change_me" 
+}
+existing_settings = db.system_settings.find_one({"type": "global"})
+if not existing_settings:
+    db.system_settings.insert_one(default_settings)
+    print(" - specific: System Settings initialized (Default API Key: sk_live_default_setup_key_change_me)")
+else:
+    print(" - System Settings already exist")
+
 print("\n✅ Database initialized successfully!")

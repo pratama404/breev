@@ -5,6 +5,9 @@ import { Wind, Droplets, Thermometer, MapPin, Share2, Activity } from 'lucide-re
 import MetricCard from '../../components/atmo/MetricCard';
 import ScoreGauge from '../../components/atmo/ScoreGauge';
 import RecommendationCard from '../../components/atmo/RecommendationCard';
+import { getAQIInfo, AQI_SCALE } from '../../lib/aqi';
+import { Line } from 'react-chartjs-2';
+import 'chart.js/auto'; // Auto-register charts
 
 export default function ScanPage() {
   const router = useRouter();
@@ -13,6 +16,7 @@ export default function ScanPage() {
   const [roomData, setRoomData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [predictions, setPredictions] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -27,21 +31,19 @@ export default function ScanPage() {
         const current = json.current || {};
         const historical = json.historical || [];
 
-        // Fallback Recommendation Logic
-        let recTitle = "Good Air Quality";
-        let recDesc = "Air quality is good. Perfect for productivity.";
-        let recType = "success";
-
+        // Use centralized AQI Logic
         const aqi = current.aqi || 0;
-        if (aqi > 150) {
-          recTitle = "Hazardous Air!";
-          recDesc = "Please ventilate the room immediately or move to a safer location.";
-          recType = "danger";
-        } else if (aqi > 100) {
-          recTitle = "Poor Air Quality";
-          recDesc = "Sensitive individuals should wear masks. Consider turning on air purifier.";
-          recType = "warning";
-        }
+        const aqiInfo = getAQIInfo(aqi);
+
+        const recTitle = `Kualitas Udara: ${aqiInfo.level}`;
+        const recDesc = aqiInfo.desc;
+
+        // Map our simple types to RecommendationCard types if needed, or pass hex directly?
+        // RecommendationCard likely expects 'success', 'warning', 'danger'.
+        // Let's map loosely or update RecommendationCard (better to map loosely for now)
+        let recType = 'success';
+        if (aqi > 50) recType = 'warning';
+        if (aqi > 150) recType = 'danger';
 
         setRoomData({
           name: current.name || `Room ${id}`,
@@ -52,7 +54,7 @@ export default function ScanPage() {
           humidity: current.humidity ? Math.round(current.humidity) : '--',
           co2: current.co2 ? Math.round(current.co2) : '--',
           lastUpdate: "Live",
-          recommendation: { title: recTitle, desc: recDesc, type: recType }
+          recommendation: { title: recTitle, desc: recDesc, type: recType, colorInfo: aqiInfo }
         });
       } catch (err) {
         console.error(err);
@@ -65,6 +67,24 @@ export default function ScanPage() {
     fetchData();
     const interval = setInterval(fetchData, 10000); // Live poll every 10s
     return () => clearInterval(interval);
+  }, [id]);
+
+  // Fetch Predictions
+  useEffect(() => {
+    if (!id) return;
+    async function fetchPred() {
+      try {
+        const res = await fetch(`/api/predictions/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Expecting { predicted_aqi: [ {hour: 1, aqi: 45}, ... ] } or similar
+          // Adapting to whatever the API returns. 
+          // If API returns stored prediction document: { predicted_aqi: [45, 48, 50, ...] }
+          if (data.predicted_aqi) setPredictions(data.predicted_aqi);
+        }
+      } catch (e) { console.error(e); }
+    }
+    fetchPred();
   }, [id]);
 
   if (loading) return (
@@ -84,6 +104,11 @@ export default function ScanPage() {
       <Head>
         <title>{roomData.name} - Breev Monitor</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
+        <meta name="description" content={`Real-time air quality in ${roomData.name}: ${roomData.recommendation.title}`} />
+        <meta property="og:title" content={`${roomData.name} - Breev AQI`} />
+        <meta property="og:description" content={`Current AQI: ${roomData.aqi} (${roomData.recommendation.title}). ${roomData.recommendation.desc}`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://breev.vercel.app/icon-512.png" />
       </Head>
 
       {/* Mobile-Friendly Header */}
@@ -146,6 +171,69 @@ export default function ScanPage() {
                 description={roomData.recommendation.desc}
                 type={roomData.recommendation.type}
               />
+            </section>
+
+            {/* Forecasting Section */}
+            {predictions && (
+              <section className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <Activity size={20} className="text-indigo-600" />
+                  Forecasting (Next 6 Hours)
+                </h3>
+                <div className="h-48">
+                  <Line
+                    data={{
+                      labels: ['+1h', '+2h', '+3h', '+4h', '+5h', '+6h'],
+                      datasets: [{
+                        label: 'Predicted AQI',
+                        data: predictions, // Assuming array of numbers [45, 50, ...]
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                      }]
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { display: false } },
+                      scales: { y: { beginAtZero: true } }
+                    }}
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* Educational Section */}
+            <section className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+              <div className="p-6 border-b border-gray-100 bg-gray-50">
+                <h3 className="font-bold text-lg text-gray-900">Panduan Kualitas Udara (US EPA)</h3>
+                <p className="text-sm text-gray-500">Standar yang digunakan untuk menghitung Indeks Kualitas Udara.</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 font-medium">
+                    <tr>
+                      <th className="px-6 py-3">Rentang AQI</th>
+                      <th className="px-6 py-3">Status</th>
+                      <th className="px-6 py-3 hidden md:table-cell">Implikasi Kesehatan</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {AQI_SCALE.map((scale, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50/50">
+                        <td className="px-6 py-4 font-mono font-bold">{scale.range}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${scale.color}`}>
+                            {scale.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 hidden md:table-cell text-gray-600">{scale.desc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           </div>
 

@@ -157,11 +157,19 @@ export function NotificationSettings({ settings, onToggle }) {
     );
 }
 
-export function ApiKeyGenerator() {
-    const [key, setKey] = useState('sk_live_' + Math.random().toString(36).substr(2, 16));
+// Note: We need to lift state up if we want to save it!
+export function ApiKeyGenerator({ currentKey, onSave }) {
+    const [key, setKey] = useState(currentKey || 'sk_live_' + Math.random().toString(36).substr(2, 16));
 
     const regenerate = () => {
-        setKey('sk_live_' + Math.random().toString(36).substr(2, 16));
+        const newKey = 'sk_live_' + Math.random().toString(36).substr(2, 16);
+        setKey(newKey);
+        // Auto-save on regenerate? Or require manual save?
+        // Let's offer a "Save" button or auto-save.
+    };
+
+    const handleSave = () => {
+        onSave(key);
     };
 
     return (
@@ -179,9 +187,14 @@ export function ApiKeyGenerator() {
                     Copy
                 </button>
             </div>
-            <button onClick={regenerate} className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition">
-                Regenerate Key
-            </button>
+            <div className="flex gap-2">
+                <button onClick={regenerate} className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition">
+                    Regenerate Key
+                </button>
+                <button onClick={handleSave} className="px-4 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-semibold transition">
+                    Save Key
+                </button>
+            </div>
         </div>
     )
 }

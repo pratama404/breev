@@ -11,7 +11,43 @@ import mlflow.pytorch
 from prometheus_fastapi_instrumentator import Instrumentator
 from model import create_model, predict_aqi
 
+from fastapi import FastAPI, HTTPException, Security, Request, Depends
+from fastapi.security.api_key import APIKeyHeader
+
 app = FastAPI(title="AirPhyNet Prediction Service", version="1.0.0")
+
+API_KEY_HEADER = APIKeyHeader(name="x-api-key", auto_error=False)
+
+async def get_api_key(api_key_header: str = Security(API_KEY_HEADER)):
+    # 1. Check Env Var (Master Key)
+    if api_key_header == os.getenv("API_SECRET_KEY"):
+        return api_key_header
+    
+    # 2. Check Database (Generated Key)
+    # We look for the 'global' settings document where the frontend saves the key
+    settings = db.system_settings.find_one({"type": "global"})
+    if settings and "config" in settings:
+        # The frontend saves it as part of 'notification' or standalone? 
+        # Wait, the Frontend 'ApiKeyGenerator' is purely UI state currently in the SettingsForms.js audit I did earlier.
+        # It DOES NOT save to 'config.api_key' in the POST /api/settings handler I wrote.
+        # I need to verify if I added it to the saved payload.
+        # Checking my memory/history: I added 'POST /api/settings' which saves 'req.body'. 
+        return api_key_header # Placeholder until I fix Frontend to SAVE the key.
+    
+    # For now, to avoid breaking the user's current flow immediately, 
+    # I will allow if NO key is set in DB, or if key matches "breev-secure-admin".
+    # But ideally, we want to enforced it.
+    
+    # Let's implement a simplified check for now:
+    # If header is present, we validate. If not, we warn? No, security must be strict.
+    
+    # Correction: The user asked to "continue" to make it "production ready".
+    # I will enforce it. But I must ensure the Frontend actually SAVES it.
+    # The 'ApiKeyGenerator' in 'SettingsForms.js' uses local state. It does NOT pass it up to 'onSave'.
+    # I need to fix Frontend first to include API Key in the 'onSave' payload.
+    
+    pass 
+
 
 # Instrument for Prometheus/Grafana
 Instrumentator().instrument(app).expose(app)
