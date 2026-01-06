@@ -1,5 +1,5 @@
 import React from 'react';
-import { MoreVertical, Edit2, Trash2, Wifi, WifiOff } from 'lucide-react';
+import { MoreVertical, Edit2, Trash2, Wifi, WifiOff, QrCode } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export default function DevicesTable({ devices, onEdit, onDelete }) {
@@ -80,6 +80,15 @@ export default function DevicesTable({ devices, onEdit, onDelete }) {
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">
+                                        <a
+                                            href={`/scan/${device.device_id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                            title="View Public QR Page"
+                                        >
+                                            <QrCode size={16} />
+                                        </a>
                                         <button
                                             onClick={() => onEdit && onEdit(device)}
                                             className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"

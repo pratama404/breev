@@ -81,7 +81,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
                         />
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-white truncate">Admin User</p>
-                            <p className="text-xs text-slate-500 truncate">admin@atmo.com</p>
+                            <p className="text-xs text-slate-500 truncate">admin@breev.com</p>
                         </div>
                         <button
                             onClick={() => router.push('/admin/login')}

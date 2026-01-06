@@ -79,8 +79,12 @@ export default function ScanPage() {
           const data = await res.json();
           // Expecting { predicted_aqi: [ {hour: 1, aqi: 45}, ... ] } or similar
           // Adapting to whatever the API returns. 
-          // If API returns stored prediction document: { predicted_aqi: [45, 48, 50, ...] }
-          if (data.predicted_aqi) setPredictions(data.predicted_aqi);
+          // If API returns stored prediction document: { predictions: [{predicted_co2: 500}, ...] }
+          if (data.predictions) {
+            // Extract CO2 values
+            const values = data.predictions.map(p => p.predicted_co2);
+            setPredictions(values);
+          }
         }
       } catch (e) { console.error(e); }
     }
@@ -119,7 +123,22 @@ export default function ScanPage() {
             <MapPin size={12} className="mr-1" /> {roomData.floor}, {roomData.building}
           </p>
         </div>
-        <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition">
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: `${roomData.name} Air Quality`,
+                text: `Current AQI in ${roomData.name}: ${roomData.aqi}`,
+                url: window.location.href
+              }).catch(console.error);
+            } else {
+              // Fallback
+              navigator.clipboard.writeText(window.location.href);
+              alert("Link copied to clipboard!");
+            }
+          }}
+          className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition"
+        >
           <Share2 size={18} className="text-gray-600" />
         </button>
       </header>
@@ -185,8 +204,8 @@ export default function ScanPage() {
                     data={{
                       labels: ['+1h', '+2h', '+3h', '+4h', '+5h', '+6h'],
                       datasets: [{
-                        label: 'Predicted AQI',
-                        data: predictions, // Assuming array of numbers [45, 50, ...]
+                        label: 'Predicted CO2 (PPM)',
+                        data: predictions,
                         borderColor: '#4f46e5',
                         backgroundColor: 'rgba(79, 70, 229, 0.1)',
                         fill: true,
@@ -205,7 +224,7 @@ export default function ScanPage() {
             )}
 
             {/* Educational Section */}
-            <section className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
+            <section id="aqi-guide" className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm">
               <div className="p-6 border-b border-gray-100 bg-gray-50">
                 <h3 className="font-bold text-lg text-gray-900">Panduan Kualitas Udara (US EPA)</h3>
                 <p className="text-sm text-gray-500">Standar yang digunakan untuk menghitung Indeks Kualitas Udara.</p>
@@ -249,7 +268,7 @@ export default function ScanPage() {
               </div>
               <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur p-4 rounded-xl shadow-sm">
                 <h4 className="font-bold text-sm">Location Context</h4>
-                <p className="text-xs text-gray-500 mt-1">205 Market St, San Francisco</p>
+                <p className="text-xs text-gray-500 mt-1">{roomData.floor}, {roomData.building}</p>
               </div>
             </div>
 
@@ -258,8 +277,13 @@ export default function ScanPage() {
               <h3 className="font-bold text-lg mb-2">About Breev</h3>
               <p className="text-sm text-gray-400 leading-relaxed">
                 We monitor indoor environmental quality to ensure your health and productivity. Scan any room&apos;s QR code to see real-time data.
+                <br /><br />
+                <strong>AI Forecasting:</strong> Powered by <em>AirPhyNet</em> (Physics-Informed LSTM) to predict future trends based on airflow dynamics.
               </p>
-              <button className="mt-4 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-sm transition">
+              <button
+                onClick={() => document.getElementById('aqi-guide').scrollIntoView({ behavior: 'smooth' })}
+                className="mt-4 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold text-sm transition"
+              >
                 Learn More
               </button>
             </div>

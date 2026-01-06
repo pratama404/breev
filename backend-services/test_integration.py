@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_URL = "http://localhost:8000" # Local Docker or Cloudflare URL
-API_KEY = os.getenv("API_SECRET_KEY", "sk_live_master_key_change_me")
+API_KEY = os.getenv("API_SECRET_KEY", "sk_live_default_setup_key_change_me")
 
 def test_health():
     print(f"\n[1] Testing Health Check ({BASE_URL}/health)...")
