@@ -243,7 +243,7 @@ export default function ScanPage() {
                       <tr key={idx} className="hover:bg-gray-50/50">
                         <td className="px-6 py-4 font-mono font-bold">{scale.range}</td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${scale.color}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${scale.badgeTextColor || 'text-white'} ${scale.color}`}>
                             {scale.label}
                           </span>
                         </td>
