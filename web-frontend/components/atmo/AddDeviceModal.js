@@ -70,11 +70,15 @@ export default function AddDeviceModal({ isOpen, onClose, onSuccess }) {
                             type="text"
                             placeholder="e.g. DEV-005"
                             value={formData.sensor_id}
-                            onChange={(e) => setFormData({ ...formData, sensor_id: e.target.value })}
-                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition"
+                            onChange={(e) => {
+                                // Force uppercase and remove invalid chars (only allow A-Z, 0-9, -, _)
+                                const val = e.target.value.toUpperCase().replace(/[^A-Z0-9-_]/g, '');
+                                setFormData({ ...formData, sensor_id: val });
+                            }}
+                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none transition font-mono uppercase"
                             disabled={loading}
                         />
-                        <p className="text-xs text-gray-500 mt-1">Unique identifier for the sensor hardware.</p>
+                        <p className="text-xs text-gray-500 mt-1">Unique identifier. Alphanumeric, dashes, and underscores only.</p>
                     </div>
 
                     <div>

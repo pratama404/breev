@@ -18,9 +18,16 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          docker system prune -a -f
+
       - name: Install Dependencies
         run: |
-          pip install pandas numpy pymongo scipy python-dotenv mlflow dagshub torch
+          pip install torch==2.1.2 --index-url https://download.pytorch.org/whl/cpu
+          pip install pandas numpy pymongo scipy python-dotenv mlflow dagshub
 
       - name: Run Drift Detector
         id: drift_check

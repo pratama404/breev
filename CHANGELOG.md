@@ -23,6 +23,9 @@ Semua perubahan pada project **Breev**.
 - Fix `plantuml.jar` missing error (Migrated to Mermaid.js).
 - Fix `inference_api.py` security bypass.
 - Fix `setup_atlas.py` creating dead admin users.
+- Fix GitHub Actions "No space left on device" (Switched to CPU-only PyTorch).
+- Fix API usage of unverified endpoints (Added `lib/auth.js` middleware).
+- Fix Admin Dashboard UI alerts (Added interactive Location/Notification dropdowns).
 
 ### 📚 Documentation
 - Added `DEPLOYMENT-GUIDE.md`.

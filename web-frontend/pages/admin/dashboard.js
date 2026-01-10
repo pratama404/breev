@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/atmo/AdminLayout';
+import AddDeviceModal from '../../components/atmo/AddDeviceModal';
 import MetricCard from '../../components/atmo/MetricCard';
 import DeviceList from '../../components/atmo/DeviceList';
 import AirQualityChart from '../../components/atmo/AirQualityChart';
@@ -12,38 +13,39 @@ import autoTable from 'jspdf-autotable';
 export default function DashboardPage() {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAddDeviceModalOpen, setIsAddDeviceModalOpen] = useState(false);
 
   // Fetch Real Data
-  useEffect(() => {
-    async function fetchDevices() {
-      try {
-        const res = await fetch('/api/devices');
-        const data = await res.json();
+  async function fetchDevices() {
+    try {
+      const res = await fetch('/api/devices');
+      const data = await res.json();
 
-        // Enrich with status logic if API doesn't provide it fully
-        const now = new Date();
-        const enriched = data.map(d => {
-          const lastSeen = d.last_seen ? new Date(d.last_seen) : null;
-          const isOnline = lastSeen && (now - lastSeen) < 5 * 60 * 1000; // 5 min threshold
+      // Enrich with status logic if API doesn't provide it fully
+      const now = new Date();
+      const enriched = data.map(d => {
+        const lastSeen = d.last_seen ? new Date(d.last_seen) : null;
+        const isOnline = lastSeen && (now - lastSeen) < 5 * 60 * 1000; // 5 min threshold
 
-          return {
-            id: d.sensor_id,
-            name: d.name || d.sensor_id,
-            location: d.location || 'Unknown',
-            aqi: d.current_aqi || 0,
-            status: isOnline ? 'online' : 'offline',
-            battery: d.battery_level || 100
-          };
-        });
+        return {
+          id: d.sensor_id,
+          name: d.name || d.sensor_id,
+          location: d.location || 'Unknown',
+          aqi: d.current_aqi || 0,
+          status: isOnline ? 'online' : 'offline',
+          battery: d.battery_level || 100
+        };
+      });
 
-        setDevices(enriched);
-      } catch (e) {
-        console.error("Failed to fetch devices", e);
-      } finally {
-        setLoading(false);
-      }
+      setDevices(enriched);
+    } catch (e) {
+      console.error("Failed to fetch devices", e);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchDevices();
     const interval = setInterval(fetchDevices, 30000); // Poll every 30s
     return () => clearInterval(interval);
@@ -187,7 +189,8 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <DeviceList devices={devices} />
+
+              <DeviceList devices={devices} onAddDevice={() => setIsAddDeviceModalOpen(true)} />
             )}
           </div>
         </div>
@@ -228,6 +231,12 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      <AddDeviceModal
+        isOpen={isAddDeviceModalOpen}
+        onClose={() => setIsAddDeviceModalOpen(false)}
+        onSuccess={fetchDevices}
+      />
 
     </AdminLayout>
   );

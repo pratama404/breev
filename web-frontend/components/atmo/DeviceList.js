@@ -2,7 +2,7 @@ import React from 'react';
 import { Search, Filter, Plus } from 'lucide-react';
 import DeviceCard from './DeviceCard';
 
-export default function DeviceList({ devices }) {
+export default function DeviceList({ devices, onAddDevice }) {
     return (
         <div className="space-y-6">
 
@@ -22,7 +22,10 @@ export default function DeviceList({ devices }) {
                     <button className="p-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600">
                         <Filter size={18} />
                     </button>
-                    <button className="flex items-center space-x-2 px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition shadow-sm">
+                    <button
+                        onClick={onAddDevice}
+                        className="flex items-center space-x-2 px-4 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition shadow-sm"
+                    >
                         <Plus size={18} />
                         <span className="text-sm font-medium hidden sm:inline">Add Device</span>
                     </button>

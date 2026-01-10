@@ -1,4 +1,5 @@
 import clientPromise from '../../../lib/db';
+import { verifyAuth } from '../../../lib/auth';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -45,6 +46,11 @@ export default async function handler(req, res) {
 
       res.status(200).json(latestPrediction);
     } else if (req.method === 'POST') {
+      // Protect POST (Triggering new predictions)
+      if (!verifyAuth(req)) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
       // Trigger new prediction
       try {
         const airphynetUrl = process.env.AIRPHYNET_API_URL;

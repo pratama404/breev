@@ -4,16 +4,11 @@ import { getAQIInfo } from '../../lib/aqi';
 export default function ScoreGauge({ value, maxValue = 500 }) {
   const getStatus = (aqi) => {
     const info = getAQIInfo(aqi);
-    // Map internal logic to helper info
-    let icon = Smile;
-    if (aqi > 50) icon = Meh;
-    if (aqi > 100) icon = Frown;
-    if (aqi > 150) icon = AlertTriangle;
-    if (aqi > 200) icon = AlertOctagon;
-    if (aqi > 300) icon = Skull;
 
-    // We need to translate 'bg-color' to 'text-color' if strictly following previous pattern
-    // Or just use the hex
+    // Map icons based on severity level (0-5)
+    const icons = [Smile, Meh, Frown, AlertTriangle, AlertOctagon, Skull];
+    const icon = icons[info.severity] || Skull;
+
     return {
       label: info.level,
       colorClass: info.textColor,

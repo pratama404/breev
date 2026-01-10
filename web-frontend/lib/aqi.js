@@ -4,6 +4,7 @@ export const getAQIInfo = (aqi) => {
 
     if (value <= 50) return {
         level: "Baik",
+        severity: 0,
         color: "bg-green-500",
         textColor: "text-green-600",
         badgeTextColor: "text-gray-900",
@@ -12,6 +13,7 @@ export const getAQIInfo = (aqi) => {
     };
     if (value <= 100) return {
         level: "Sedang",
+        severity: 1,
         color: "bg-yellow-400",
         textColor: "text-yellow-600",
         badgeTextColor: "text-gray-900",
@@ -20,6 +22,7 @@ export const getAQIInfo = (aqi) => {
     };
     if (value <= 150) return {
         level: "Tidak Sehat (Sensitif)",
+        severity: 2,
         color: "bg-orange-500",
         textColor: "text-orange-600",
         badgeTextColor: "text-gray-900",
@@ -28,6 +31,7 @@ export const getAQIInfo = (aqi) => {
     };
     if (value <= 200) return {
         level: "Tidak Sehat",
+        severity: 3,
         color: "bg-red-500",
         textColor: "text-red-600",
         badgeTextColor: "text-white",
@@ -36,6 +40,7 @@ export const getAQIInfo = (aqi) => {
     };
     if (value <= 300) return {
         level: "Sangat Tidak Sehat",
+        severity: 4,
         color: "bg-purple-600",
         textColor: "text-purple-600",
         badgeTextColor: "text-white",
@@ -44,6 +49,7 @@ export const getAQIInfo = (aqi) => {
     };
     return {
         level: "Berbahaya",
+        severity: 5,
         color: "bg-rose-900",
         textColor: "text-rose-900",
         badgeTextColor: "text-white",

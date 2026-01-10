@@ -50,7 +50,7 @@ export default async function handler(req, res) {
         sensor_id,
         name,
         location,
-        qr_code: `${process.env.NEXTAUTH_URL || `https://${req.headers.host}`}/room/${sensor_id}`,
+        qr_code: `${process.env.NEXTAUTH_URL || `https://${req.headers.host}`}/scan/${sensor_id}`,
         installed_date: new Date(),
         status: 'active'
       };

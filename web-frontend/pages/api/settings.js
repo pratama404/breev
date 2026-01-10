@@ -1,7 +1,13 @@
 import clientPromise from '../../lib/db';
+import { verifyAuth } from '../../lib/auth';
 
 export default async function handler(req, res) {
     try {
+        // Protect all routes here
+        if (!verifyAuth(req)) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
         const client = await clientPromise;
         const db = client.db('aqi_monitoring');
         const collection = db.collection('system_settings');
